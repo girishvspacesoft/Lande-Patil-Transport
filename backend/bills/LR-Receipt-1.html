@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+    }
+    body {
+      width: 146.6mm;
+      height: 208.6mm;
+      margin: .7cm .7cm .7cm .7cm;
+      border: 1px dashed black;
+      overflow: hidden;
+      font-size: 10px;
+      font-family: calibri;
+    }
+    @page {
+      /* size: 7in 9.25in;
+      margin: 27mm 16mm 27mm 16mm; */
+      /* size: 210mm 148mm; */
+      size: A4;
+      margin: .7cm .7cm .7cm .7cm;
+      /* margin: 27mm 16mm 27mm 16mm; */
+      border: 0;
+      margin: 0;
+    }
+    /* @page :left {
+      margin-left: 0.7cm;
+    }
+    @page :right {
+      margin-left: 0.7cm;
+    } */
+    .main {
+      width: 100%;
+      border: 1px solid red;
+      border-collapse: collapse;
+      border-spacing: 0;
+    }
+    .main > tbody > tr > td {
+      border: 1px solid red;
+      padding: 3px;
+      color: red;
+    }
+    .main > tbody > tr > td.tbl-child {
+      padding: 0;
+    }
+    .main > tbody > tr > td.tbl-child table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+    .main > tbody > tr > td.tbl-child table > tbody > tr > td:not(:first-child) {
+      border-left: 1px solid red;
+    }
+    .main > tbody > tr > td.tbl-child table > tbody > tr:not(:first-child) > td {
+      border-top: 1px solid red;
+    }
+    td {
+      color: red;
+      padding: 3px;
+    }
+    .no-pad { padding: 0 !important; }
+    h1 {
+      font-size: 20px;
+      color: red;
+    }
+    .txt-red { color: red; }
+    .bg-red { background-color: red; }
+    .big-red { color: #fff; background-color: red; font-size: 16px; text-align: center; }
+    .txt-white { color: #fff !important; }
+    .center {text-align: center;}
+    .addresses td{ font-size: 8px; padding: 3px; }
+    .no-bdr { border: 0 !important; }
+    .circle {
+      display: inline-block;
+      width: 40px;
+      height: 40px;
+      line-height: 40px;
+      border-radius: 50%;
+      text-shadow: 2px 2px #4e4e4e;
+      font-size: 20px;
+      font-weight: bold;
+      text-align: center;
+      border: 2px solid #000;
+      background: rgb(250, 170, 20)
+    }
+    .tbl-bdr {
+      border: 1px solid red;
+      border-collapse: collapse;
+      width: 100%;
+    }
+    .w100 { width: 100%; }
+  </style>
+</head>
+
+<body>
+  <table class="main">
+    <tr style="display: none">
+      <td></td>
+      <td></td>
+      <td></td>
+      <td></td>
+      <td></td>
+    </tr>
+    <tr>
+      <td colspan="4" class="txt-red">Subject to pune jurisdiction<br>
+        <h1>DHAYRESHWAR TRANSPORT CO.&reg;</h1></td>
+      <td class="big-red txt-white" width="19%">
+        WAY BILL
+      </td>
+    </tr>
+    <tr>
+      <td rowspan="2" colspan="4" class="no-pad">
+        <table>
+          <tr class="addresses">
+            <td width="22%">
+              <p>Head Office: Shop 2,
+                SumitPlaza,Gultekdi,
+                Market Yard,
+                Pune-411037.
+                Tel.:(020) 24264693 /
+                4052.
+                Mobile:9921227777</p>
+            </td>
+            <td width="22%">
+              <p>Kolhapur Office: P 37/1,
+                M.I.D.C. Gokul
+                Shirgaon
+                Kolhapur-426234.
+                Tel.:(0231) 2672655 /
+                988.
+                Mobile:9422517101</p>
+            </td>
+            <td class="center" width="12%">
+              <div class="circle">
+                <span style="color:#fff;">D</span>T</h1>
+              </div>
+            </td>
+            <td width="22%">
+              <p>Kolhapur Office:
+                P/1, M.I.D.C., Shiroli
+                Kolhapur - 426230.
+                Tel.:(0230) 2460700.
+                Mobile: 9422507800</p>
+            </td>
+            <td width="22%">
+              <p>Sangli Office: P/91,
+                M.I.D.C., Kupward,
+                Sangali - 426436
+                Tel.:(0233) 2645426.
+                Mobile: 9422517102</p>
+            </td>
+          </tr>
+        </table>
+      </td>
+      <td>No: {{info.lr.LRNo}}</td>
+    </tr>
+    <tr>
+      <td>Date: {{info.lr.date}}</td>
+    </tr>
+    <tr>
+      <td colspan="5" class="tbl-child">
+        <table>
+          <tr>
+            <td width="265">
+              From: {{info.lr.from}}
+            </td>
+            <td>
+              To: {{info.lr.to}}
+            </td>
+          </tr>
+          <tr>
+            <td>
+              <p>CONSIGNOR: {{info.consignor.name}}</p>
+              <p>Address: {{info.consignor.address}}, {{info.consignor.city}}</p>
+            </td>
+            <td>
+              <p>CONSIGNEE: {{info.consignee.name}}</p>
+              <p>Address: {{info.consignee.address}}, {{info.consignee.city}}</p>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+    <tr>
+      <td colspan="4" class="tbl-child">
+        <table style="height: 35px;">
+          <tr>
+            <td width="265">Invoice / Challan No.</td>
+            <td>Delivery At:</td>
+          </tr>
+        </table>
+      </td>
+      <td>
+        <p>Truck / Tempo</p>
+        <p>No.: {{info.lr.vehicleNo}}</p>
+      </td>
+    </tr>
+  </table>
+</body>
+
+</html>

@@ -1,0 +1,15 @@
+.tbl_permissions {
+  width: 100%;
+  margin-bottom: 20px;
+}
+.tbl_permissions .head {
+  font-size: 1.2em;
+  padding: 10px 0;
+}
+
+.tbl_permissions tr td:nth-child(2),
+.tbl_permissions tr td:nth-child(3),
+.tbl_permissions tr td:nth-child(5),
+.tbl_permissions tr td:nth-child(6) {
+  text-align: center;
+}

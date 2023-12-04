@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="en">
+  <style>
+    @page {
+      size: 238mm 193mm;
+      margin-left: 19mm;
+      margin-right: 19mm;
+      margin-top: 4mm;
+      margin-bottom: 4mm;
+      overflow: hidden;
+    }
+    * {padding: 0; margin: 0;}
+    body {
+      font-family: Arial, Helvetica, sans-serif;
+      font-size: 9pt;
+      /*border: 1px solid #ccc;*/
+      height: calc(100vh - 2px); /*(-2px for border)*/
+      color: red;
+      width: 200mm; /*To be removed*/
+      height: 185mm; /*To be removed*/
+      background-color: #fff;
+    }
+    table {
+      border-collapse: collapse;
+      width: 100%;
+      border-left: 1px solid red;
+      border-top: 1px solid red;
+    }
+    td {
+      border-right: 1px solid red;
+      border-bottom: 1px solid red;
+      padding: 1mm;
+    }
+    td.col-1 {
+      width: 12mm;
+    }
+    td.col-3 {
+      width: 15mm;
+    }
+    td.col-4 {
+      width: 21mm;
+    }
+    td.col-5 {
+      width: 28mm;
+    }
+    tr.guide td {
+      height: 0px;
+      border: 0;
+      padding: 0;
+    }
+    .small {
+      font-size: 8pt;
+    }
+    .smaller {
+      font-size: 7pt;
+    }
+    .heading {
+      font-size: 25pt;
+      font-family: 'Times New Roman', Times, serif;
+      font-weight: bold;
+      text-align: center;
+      line-height: 10pt;
+      padding-bottom: 8pt;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+    }
+    table table {
+      border: 0;
+    }
+    table table td {
+      border: 0;
+    }
+    .logo {
+      width: 15mm;
+      height: 15mm;
+      line-height: 15mm;
+      border-radius: 50%;
+      font-size: 28pt;
+      text-align: center;
+      border: 2px solid #000;
+      background: rgb(250, 170, 20);
+      margin: auto;
+      font-weight: bold;
+    }
+    tr.addresses td {
+      padding: 1mm;
+      padding: 0;
+    }
+    .addresses p {
+      font-size: 8pt;
+    }
+    .center {
+      text-align: center;
+    }
+    .note {
+      font-weight: bold;
+      font-family: 'Times New Roman', Times, serif;
+      font-size: 10pt;
+      line-height: 110%;
+      height: 11mm;
+      background-color: pink;
+    }
+    .header {
+      max-height: 28mm;
+      height: 26mm;
+      overflow: hidden;
+    }
+    .hide {
+      display: none;
+    }
+    .parent {
+      padding: 0;
+    }
+    tr.child td:not(:last-child) {
+      border-right: 1px solid red;
+    }
+    .v-align-top { vertical-align: top; }
+    .pad-tb-0 { padding-top: 0; padding-bottom: 0; }
+    .h37mm { height: 37mm; }
+    .bdr-top-0 { border-top: 0; }
+    .bdr-top-1 { border-top: 1px solid red; }
+    .bdr-btm-0 { border-bottom: 0; }
+    .h-6mm { height: 6mm; }
+    .w-43mm { width: 43mm; }
+    .h-6mm { height: 6mm; }
+    .h-11mm { height: 11mm; }
+    .h-18mm { height: 18mm; }
+    .w-20-5mm { width: 20.5mm; }
+    .fs-7-5pt { font-size: 7.5pt; }
+    .fs-8pt { font-size: 8pt; }
+    .pad-0 { padding: 0; }
+    .text-right { text-align: right; }
+    .fr { float: right; }
+    .valignTop { vertical-align: top; }
+    .bl-declaration {
+      position: relative;
+      padding-top: 5mm;
+      font-size: 7.1pt;
+      text-align: justify;
+    }
+    .bl-declaration .title {
+      position: absolute;
+      left: -1mm;
+      top: -1mm;
+      width: calc(100% + 2mm);
+      background-color: pink;
+      text-align: center;
+      border-bottom: 1px solid red;
+      border-top: 1px solid red;
+      border-right: 1px solid red;
+      font-size: 12pt;
+      font-weight: bold;
+      line-height: 16pt;
+      height: 5mm;
+    }
+
+  </style>
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Challan</title>
+</head>
+<body>
+  <table>
+    <tr class="guide">
+      <td class="col-1"></td>
+      <td class="col-2"></td>
+      <td class="col-3"></td>
+      <td class="col-4"></td>
+      <td class="col-5"></td>
+    </tr>
+    <tr>
+      <td colspan="4" rowspan="3" class="header">
+        <p class="small">Subject to Pune Jurisdiction</p>
+        <p class="heading">Dhayreshwar Transport Co.<sup>&reg;</sup></p>
+        <table>
+          <tr class="addresses">
+            <td width="25%">
+              <p><strong>Head Office</strong>: Shop 2,<br />
+                Sumit Plaza, Gultekdi,<br />
+                <strong>Market Yard</strong>, Pune - 411037.<br />
+                Tel.:(020) 24264693 / 4052.<br />Mobile: 99212 27777</p>
+            </td>
+            <td width="23%">
+              <p><strong>Kolhapur Office</strong>: P 37/1,<br />
+                M.I.D.C. <strong>Gokul Shirgaon</strong>,<br />
+                Kolhapur - 426234.<br />
+                Tel.:(0231) 2672655 / 988.<br />
+                Mobile: 94225 17101</p>
+            </td>
+            <td width="14%">
+              <div class="logo">DT</div>
+            </td>
+            <td width="20%">
+              <p><strong></strong>Kolhapur Office</strong>:<br />
+                P/17, M.I.D.C., <strong>Shiroli</strong>,<br />
+                Kolhapur - 416122.<br />
+                Tel.:(0230) 2460700.<br />
+                Mobile: 94225 07800</p>
+            </td>
+            <td width="18%">
+              <p><strong>Sangli Office</strong>: P/91,<br />
+                M.I.D.C., <strong>Kupward</strong>,<br />
+                Sangali - 426436<br />
+                Tel.: (0233) 2645426<br />
+                Mobile: 94225 17102</p>
+            </td>
+          </tr>
+        </table>
+      </td>
+      <td class="center note">GOODS CONSIGNMENT NOTE</td>
+    </tr>
+    <tr>
+      <td>No: <span class="fr">{{info.lr.LRNo}}</span></td>
+    </tr>
+    <tr>
+      <td>Date: <span class="fr">{{info.lr.date}}</span></td>
+    </tr>
+    <tr>
+      <td colspan="5" class="parent">
+        <table>
+          <tr class="child">
+            <td width="50%" class="h-6mm">From: {{info.lr.from}}</td>
+            <td width="50%">To: {{info.lr.to}}</td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+    <tr>
+      <td colspan="5" class="parent">
+        <table>
+          <tr class="child">
+            <td width="50%" class="v-align-top h-18mm">COSIGNOR: {{info.consignor.name}}<br>
+              Address: {{info.consignor.address}}, {{info.consignor.city}}</td>
+            <td width="50%" class="v-align-top">COSIGNOR: {{info.consignee.name}}<br>
+              Address: {{info.consignee.address}}, {{info.consignee.city}}</td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+    <tr>
+      <td colspan="5" class="parent">
+        <table>
+          <tr class="child">
+            <td width="50%" class="v-align-top h-11mm">Invoice / Challan No.: </td>
+            <td class="v-align-top">Delivery At:</td>
+            <td class="v-align-top col-5 center">Truck / Tempo No.: {{info.lr.vehicleNo}}</td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+    <tr>
+      <td class="center pad-tb-0">No. of Articles</td>
+      <td class="center pad-tb-0">Description  (said to Contain)</td>
+      <td class="center pad-tb-0">Actual Weight</td>
+      <td class="center pad-tb-0">Rate / Kg</td>
+      <td class="center pad-tb-0 col-5">FREIGHT<br />TO PAY / TBB</td>
+    </tr>
+    <tr>
+      <td class="h37mm bdr-btm-0 valignTop">
+        {{#info.lr.transactions}}
+          <p><center>{{articleNo}}</center></p>
+        {{/info.lr.transactions}}
+      </td>
+      <td class="h37mm bdr-btm-0 valignTop">
+        {{#info.lr.transactions}}
+          <p><center>{{article}} - {{description}}</center></p>
+        {{/info.lr.transactions}}
+      </td>
+      <td class="h37mm bdr-btm-0 valignTop">
+        {{#info.lr.transactions}}
+          <p><center>{{weight}}</center></p>
+        {{/info.lr.transactions}}
+      </td>
+      <td class="h37mm valignTop">
+        {{#info.lr.transactions}}
+          <p><center>{{rate}}</center></p>
+        {{/info.lr.transactions}}
+      </td>
+      <td class="h37mm valignTop text-right">
+        {{#info.lr.transactions}}
+          <p>{{freight}}</p>
+        {{/info.lr.transactions}}
+      </td>
+    </tr>
+    <tr>
+      <td class="bdr-top-0 bdr-btm-0"></td>
+      <td class="bdr-top-0 bdr-btm-0"></td>
+      <td class="bdr-top-0 bdr-btm-0"></td>
+      <td class="center h-6mm small">Hamali</td>
+      <td class="text-right">{{info.lr.hamali}}</td>
+    </tr>
+    <tr>
+      <td class="bdr-top-0"></td>
+      <td class="bdr-top-0"></td>
+      <td class="bdr-top-0"></td>
+      <td class="center h-6mm small">O.S.C.</td>
+      <td class="text-right">{{info.lr.osc}}</td>
+    </tr>
+    <tr>
+      <td colspan="3"><strong>Remarks</strong>: {{info.lr.remark}}</td>
+      <td class="center h-6mm smaller">Delivery/Collection</td>
+      <td class="text-right">{{info.lr.deliveryCharges}}</td>
+    </tr>
+    <tr>
+      <td colspan="5" class="parent">
+        <table>
+          <tr class="child">
+            <td><strong>Value Rs. {{info.lr.materialCost}}</strong></td>
+            <td rowspan="2">
+              <strong>GTA - RCM APPLICABLE <br />
+              SAC NO. 996511<br />
+              Description of SAC:<br />
+              Road Transport Service of Goods</strong>
+            </td>
+            <td class="center w-43mm">
+              <strong>Enrolment ID: u/s 35 (2):<br />
+              27AAEFD5950A1ZS</strong>
+            </td>
+            <td class="center h-6mm w-20-5mm">Other charges</td>
+            <td class="col-5 text-right">{{info.lr.otherCharges}}</td>
+          </tr>
+          <tr class="child">
+            <td class="bdr-top-1"><strong>PAN No.: 27AAEFD5950A</strong></td>
+            <td class="center bdr-top-1">
+              <strong>GST Payable By<br />
+              Consignor/Consignee</strong>
+            </td>
+            <td class="center h-6mm bdr-top-1">Statistical<br />charges</td>
+            <td class="col-5 bdr-top-1 text-right">{{info.lr.statistical}}</td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+    <tr>
+      <td colspan="5" class="parent">
+        <table>
+          <tr class="child">
+            <td colspan="2" rowspan="2">
+              <div class="bl-declaration">
+                <div class="title">AT OWNERS RISK</div>
+                <p>carrier is not responsible for leakage or breakage.<br />
+                This Consignment Note is issued subject to the condition printed overleaf & carriers Act III
+                of 1965. Declaration by Consignor. I hereby solemnly declare to the Transport and all
+                concerned that the particulars of the consignment mentioned in the Lorry Receipt are true
+                and correct and to the entries and description in our books of accounts and other related
+                documents in our possession or contract.</p>
+              </div>
+            </td>
+            <td class="center w-43mm fs-7-5pt" rowspan="2">
+              Material received in good conditions<br /><br /><br /><br /><br /><br />
+              Receiver's Sign. with Stamp
+            </td>
+            <td class="center h-6mm w-20-5mm"><strong>TOTAL</strong></td>
+            <td class="col-5 text-right">{{info.lr.total}}</td>
+          </tr>
+          <tr>
+            <td colspan="2" class="bdr-top-1 center fs-8pt pad-0">
+              For <strong>DHAYRESHWAR TRANSPORT CO.</strong><br/><br/><br/><br/>
+              Authorised Signatory
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>

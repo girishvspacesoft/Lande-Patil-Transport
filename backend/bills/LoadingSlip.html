@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="en">
+  <style>
+    @page {
+      size: A4;
+      size: 210mm 297mm;
+      margin: 10mm;
+      overflow: hidden;
+    }
+    * {padding: 0; margin: 0;}
+    /* @media print { */
+      html,
+      body {
+        width: 190mm;
+        height: 277mm;
+        font-family: Arial, Helvetica, sans-serif;
+        font-size: 9pt;
+        background-color: #fff;
+      }
+    /* } */
+    body {
+      font-family: Arial, Helvetica, sans-serif;
+      font-size: 9pt;
+    }
+    table {
+      border-collapse: collapse;
+      width: 100%;
+      border-left: 1px solid #000;
+      border-top: 1px solid #000;
+    }
+    td {
+      border-right: 1px solid #000;
+      border-bottom: 1px solid #000;
+      padding: 1mm;
+    }
+    tr.guide td {
+      height: 0px;
+      border: 0;
+      padding: 0;
+    }
+    .small {
+      font-size: 8pt;
+    }
+    .smaller {
+      font-size: 7pt;
+    }
+    .heading {
+      font-family: 'Times New Roman', Times, serif;
+      font-size: 20pt;
+      font-weight: bold;
+      text-align: center;
+      line-height: 10pt;
+      padding-bottom: 8pt;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+    }
+    table table {
+      border: 0;
+    }
+    table table td {
+      border: 0;
+    }
+    .logo {
+      width: 15mm;
+      height: 15mm;
+      line-height: 15mm;
+      border-radius: 50%;
+      font-size: 28pt;
+      text-align: center;
+      border: 2px solid #000;
+      background: lightgray;
+      margin: auto;
+      font-weight: bold;
+    }
+    tr.addresses td {
+      padding: 1mm;
+      padding: 0;
+    }
+    .addresses p {
+      font-size: 8pt;
+    }
+    .center {
+      text-align: center;
+    }
+    .note {
+      font-weight: bold;
+      font-family: 'Times New Roman', Times, serif;
+      font-size: 10pt;
+      line-height: 110%;
+      height: 11mm;
+      background-color: lightgray;
+    }
+    .header {
+      max-height: 28mm;
+      height: 26mm;
+      overflow: hidden;
+    }
+    .hide {
+      display: none;
+    }
+    .parent {
+      padding: 0;
+    }
+    tr.child td:not(:last-child) {
+      border-right: 1px solid #000;
+    }
+    .v-align-top { vertical-align: top; }
+    .pad-tb-0 { padding-top: 0; padding-bottom: 0; }
+    .h37mm { height: 37mm; }
+    .bdr-top-0 { border-top: 0; }
+    .bdr-top-1 { border-top: 1px solid #000; }
+    .bdr-btm-0 { border-bottom: 0; }
+    .h-6mm { height: 6mm; }
+    .w-43mm { width: 43mm; }
+    .h-6mm { height: 6mm; }
+    .h-11mm { height: 11mm; }
+    .h-18mm { height: 18mm; }
+    .w-20-5mm { width: 20.5mm; }
+    .fs-7-5pt { font-size: 7.5pt; }
+    .fs-8pt { font-size: 8pt; }
+    .pad-0 { padding: 0; }
+    .text-right { text-align: right; }
+    .fr { float: right; }
+    .valignTop { vertical-align: top; }
+    .bl-declaration {
+      position: relative;
+      padding-top: 5mm;
+      font-size: 7.1pt;
+      text-align: justify;
+    }
+    .bl-declaration .title {
+      position: absolute;
+      left: -1mm;
+      top: -1mm;
+      width: calc(100% + 2mm);
+      background-color: lightgray;
+      text-align: center;
+      border-bottom: 1px solid red;
+      border-top: 1px solid red;
+      border-right: 1px solid red;
+      font-size: 12pt;
+      font-weight: bold;
+      line-height: 16pt;
+      height: 5mm;
+    }
+
+  </style>
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Challan</title>
+</head>
+<body>
+  <table>
+    <tr class="guide">
+      <td class="col-1"></td>
+      <td class="col-2"></td>
+      <td class="col-3"></td>
+      <td class="col-4"></td>
+      <td class="col-5"></td>
+      <td class="col-6"></td>
+      <td class="col-7"></td>
+    </tr>
+    <tr>
+      <td colspan="4" rowspan="3" class="header">
+        <p class="small">Subject to Pune Jurisdiction</p>
+        <p class="heading">Dhayreshwar Transport Co.<sup>&reg;</sup></p>
+        <table>
+          <tr class="addresses">
+            <td width="25%">
+              <p><strong>Head Office</strong>: Shop 2,<br />
+                Sumit Plaza, Gultekdi,<br />
+                <strong>Market Yard</strong>, Pune - 411037.<br />
+                Tel.:(020) 24264693 / 4052.<br />Mobile: 99212 27777</p>
+            </td>
+            <td width="23%">
+              <p><strong>Kolhapur Office</strong>: P 37/1,<br />
+                M.I.D.C. <strong>Gokul Shirgaon</strong>,<br />
+                Kolhapur - 426234.<br />
+                Tel.:(0231) 2672655 / 988.<br />
+                Mobile: 94225 17101</p>
+            </td>
+            <td width="14%">
+              <div class="logo">DT</div>
+            </td>
+            <td width="20%">
+              <p><strong></strong>Kolhapur Office</strong>:<br />
+                P/17, M.I.D.C., <strong>Shiroli</strong>,<br />
+                Kolhapur - 416122.<br />
+                Tel.:(0230) 2460700.<br />
+                Mobile: 94225 07800</p>
+            </td>
+            <td width="18%">
+              <p><strong>Sangli Office</strong>: P/91,<br />
+                M.I.D.C., <strong>Kupward</strong>,<br />
+                Sangali - 426436<br />
+                Tel.: (0233) 2645426<br />
+                Mobile: 94225 17102</p>
+            </td>
+          </tr>
+        </table>
+      </td>
+      <td colspan="3" class="center note">REPORT<br />PUNE</td>
+    </tr>
+    <tr>
+      <td colspan="3">No: <span class="fr">{{info.lr.LRNo}}</span></td>
+    </tr>
+    <tr>
+      <td colspan="3">Date: <span class="fr">{{info.lr.date}}</span></td>
+    </tr>
+    <tr>
+      <td colspan="4">
+        <p>Truck Owner's Name: {{Truck owner}}</p>
+        <p>Address: {{Address}}</p>
+        <p>Driver's Name: {{Truck owner}}</p>
+      </td>
+      <td colspan="3">
+        <p>Truck No.</p>
+        <p>Owner's PAN No.</p>
+      </td>
+    </tr>
+    <tr>
+      <td class="center" width="10%">No. of Packages</td>
+      <td class="center" width="10%">Way Bill No.</td>
+      <td class="center" width="40%">Consignee's Name</td>
+      <td class="center" width="10%">Address</td>
+      <td class="center" width="10%">To Pay</td>
+      <td class="center" width="10%">Billing Paid</td>
+      <td class="center" width="10%">Stacking Refund</td>
+    </tr>
+    <tr>
+      <td></td>
+      <td></td>
+      <td></td>
+      <td></td>
+      <td></td>
+      <td></td>
+      <td></td>
+    </tr>
+    <tr>
+      <td colspan="7">Remark:</td>
+    </tr>
+    <tr>
+      <td colspan="2">Hire Rs.: </td>
+      <td colspan="2" class="center">Adv. Rs.: </td>
+      <td colspan="3">Balance Rs.: </td>
+    </tr>
+    <tr>
+      <td colspan="3" style="border-right: 0; border-bottom: 0;">
+        <p>Accept all the terms & conditions mentioned as in overleaf</p>
+        <p>&nbsp;</p>
+        <p>&nbsp;</p>
+        <p>&nbsp;</p>
+        <p>&nbsp;</p>
+      </td>
+      <td colspan="4" class="center" style="border-bottom: 0;">
+        <p>For DHAYRESHWAR TRANSPORT CO.</p>
+        <p>&nbsp;</p>
+        <p>&nbsp;</p>
+        <p>&nbsp;</p>
+        <p>&nbsp;</p>
+      </td>
+    </tr>
+    <tr>
+      <td colspan="7">
+        <p>Signature of the Driver - person incharge of the Vehicle on behalf of the Vehicle owner</p>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>

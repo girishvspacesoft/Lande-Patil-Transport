@@ -1,0 +1,53 @@
+.header {
+  width: 100%;
+  padding: 0 20px;
+  background-color: #337ab7;
+  color: #fff;
+  clear: both;
+  height: 90px;
+  position: fixed;
+  left: 0;
+  top: 0;
+  width: 100%;
+  z-index: 5;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.header:after {
+  content: "";
+  clear: both;
+  display: table;
+}
+
+.header button {
+  color: #fff;
+}
+
+.head {
+  padding: 10px 0;
+}
+
+.head:after {
+  content: "";
+  clear: both;
+  display: table;
+}
+
+.logo {
+  font-size: 1.8rem;
+  float: left;
+  color: #b7c0cd;
+}
+
+.logo a {
+  color: #fff;
+  text-decoration: none;
+}
+.logo a:hover {
+  color: #fff;
+}
+
+.logout {
+  text-align: right;
+  float: right;
+}

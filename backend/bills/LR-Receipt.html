@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+    }
+    body {
+      width: 208.6mm;
+      height: 146.6mm;
+      margin: .7cm .7cm .7cm .7cm;
+      border: 1px dashed red;
+      overflow: hidden;
+      font-size: 12px;
+    }
+    @page {
+      /* size: 7in 9.25in;
+      margin: 27mm 16mm 27mm 16mm; */
+      size: 210mm 148mm;
+      /* margin: 27mm 16mm 27mm 16mm; */
+      border: 0;
+      margin: 0;
+    }
+    table,
+    main {
+        border-collapse: collapse;
+        border-spacing: 0;
+        width: 100%;
+        max-width: 100%;
+        overflow: hidden;
+        margin-left: auto;
+        margin-right: auto;
+        border: 1px solid #ddd;
+    }
+    br {
+        display: block;
+        margin: 10px 0;
+    }
+    main,
+    th,
+    td {
+        text-align: left;
+        padding: 4px;
+        border: 1px solid rgb(255, 0, 0);
+        font-size: 10px;
+        font-weight: bold;
+        color: red;
+        font-family: calibri;
+    }
+
+    h1 {
+        font-size: 30px;
+        margin: 0px;
+    }
+
+    h2 {
+        font-size: 20px;
+        margin: 0px;
+        color: #fff;
+    }
+
+    .circle {
+      width: 40px;
+      height: 40px;
+      line-height: 40px;
+      border-radius: 50%;
+      text-shadow: 2px 2px #4e4e4e;
+      font-size: 20px;
+      font-weight: bold;
+      text-align: center;
+      border: 2px solid #000;
+      background: rgb(250, 170, 20)
+    }
+
+    .watermark {
+      opacity: 0.1;
+      font-family: calibri;
+      color: BLACK;
+      position: absolute;
+      bottom: 10%;
+      left:25%;
+      Font-size: 70px;
+    }
+  </style>
+</head>
+
+<body>
+  <table class="main">
+      <tr style="border: none;">
+          <td colspan="10">Subject to pune jurisdiction<br>
+              <h1>DHAYRESHWAR TRANSPORT CO.&reg;</h1>
+          </td>
+          <td colspan="2" style="background-color: red;">
+              <center>
+                  <h2>WAY BILL</h2>
+              </center>
+          </td>
+
+      </tr>
+      <tr>
+          <td style="border-right: none; border-top: none; font-size: 10px;" rowspan="2" colspan="2">
+              <p>Head Office:Shop 2,
+                  SumitPlaza,Gultekdi,
+                  Market Yard,
+                  Pune-411037.
+                  Tel.:(020) 24264693 /
+                  4052.
+                  Mobile:9921227777</p>
+          </td>
+          <td style="border: none;  font-size: 10px;" colspan="2" rowspan="2">
+              <p>Kolhapur Office:P 37/1,
+                  M.I.D.C. Gokul
+                  Shirgaon
+                  Kolhapur-426234.
+                  Tel.:(0231) 2672655 /
+                  988.
+                  Mobile:9422517101</p>
+          </td>
+          <td style="border: none;  font-size: 10px;" rowspan="2" colspan="2">
+            <div class="circle"><h1 style="font-size: 20px;"><span style="color:#fff;">D</span>T</h1></div>
+          </td>
+          <td style="border: none;  font-size: 10px;" rowspan="2" colspan="2">
+              <p>Kolhapur Office:
+                  P/1, M.I.D.C., Shiroli
+                  Kolhapur - 426230.
+                  Tel.:(0230) 2460700.
+                  Mobile: 9422507800</p>
+          </td>
+          <td style="border: none;  font-size: 10px;" colspan="2" rowspan="2">
+              <p>Sangli Office: P/91,
+                  M.I.D.C., Kupward,
+                  Sangali - 426436
+                  Tel.:(0233) 2645426.
+                  Mobile: 9422517102</p>
+          </td>
+          <td colspan="2">No: {{info.lr.LRNo}}</td>
+
+      </tr>
+      <tr>
+          <td colspan="12">Date: {{info.lr.date}}</td>
+
+      </tr>
+      <tr>
+          <td colspan="6">From: {{info.lr.from}}</td>
+          <td colspan="6">To: {{info.lr.to}}</td>
+
+      </tr>
+      <tr>
+          <td colspan="6">CONSIGNOR: {{info.consignor.name}}<br>
+              Address: {{info.consignor.address}}, {{info.consignor.city}}</td>
+          <td colspan="6">CONSIGNEE: {{info.consignee.name}}<br>
+              Address: {{info.consignee.address}}, {{info.consignee.city}}</td>
+
+      </tr>
+      <tr>
+          <td colspan="5">Invoice / Chalan No.</td>
+          <td colspan="5">Delivery At: </td>
+          <td colspan="2">Truck / Tempo<br>No.: {{info.lr.vehicleNo}}</td>
+      </tr>
+      <tr>
+          <td>
+              <center>No. of Article</center>
+          </td>
+          <td colspan="7">
+              <center>Description (Said to Contain)</center>
+          </td>
+          <td>
+              <center>Actual Weight</center>
+          </td>
+          <td>
+              <center>Rate / Kg</center>
+          </td>
+          <td colspan="2">
+              <center>FRIGHT <br>TO PAY / TBB</center>
+          </td>
+      </tr>
+      
+          <td rowspan="3" style="vertical-align: top;">
+            {{#info.lr.transactions}}
+            <p><center>{{articleNo}}</center></p>
+            {{/info.lr.transactions}}
+          </td>
+          <td rowspan="3" style="vertical-align: top;" colspan="7">
+            {{#info.lr.transactions}}
+            <p><center>{{article}}</center></p>
+            {{/info.lr.transactions}}
+          </td>
+          <td rowspan="3" style="vertical-align: top;">
+            {{#info.lr.transactions}}
+            <p><center>{{weight}}</center></p>
+            {{/info.lr.transactions}}
+          </td>
+          <td>
+              <center>-</center>
+          </td>
+          <td colspan="2">
+              <center>{{info.lr.totalFreight}}</center>
+          </td>
+      </tr>
+      <tr>
+          
+          <td>
+              <center>Hamal</center>
+          </td>
+          <td colspan="2">
+              <center>{{info.lr.hamali}}</center>
+          </td>
+      </tr>
+      <tr>
+          
+          <td>
+              <center>O.S.C.</center>
+          </td>
+          <td colspan="2">
+              <center>{{info.lr.osc}}</center>
+          </td>
+      </tr>
+      <tr><div class="watermark"><center>DTCO<br><h1>AN ISO 9001-2008 CERTIFIED Company </h1></center></div>
+          <td>
+              <center>{{info.lr.totalArticles}}</center>
+          </td>
+          <td colspan="7">
+              <center>Total</center>
+          </td>
+          <td><center>{{info.lr.totalWeight}}</center></td>
+          <td>
+              <center>Delivery / Collection</center>
+          </td>
+          <td colspan="2">
+              <center>{{info.lr.deliveryCharges}}</center>
+          </td>
+      </tr>
+
+      <tr>
+          <td colspan="9">Remarks: {{info.lr.remark}}</td>
+          <td>
+              <center>Other Charges</center>
+          </td>
+          <td colspan="2">
+              <center>{{info.lr.otherCharges}}</center>
+          </td>
+      </tr>
+      <tr>
+          <td colspan="4">Value Rs.: {{info.lr.materialCost}}</td>
+          <td colspan="5">Service Tax No.: </td>
+          <td>
+              <center>Statistical Charges</center>
+          </td>
+          <td colspan="2">
+              <center>{{info.lr.statistical}}</center>
+          </td>
+      </tr>
+      <tr>
+          <td colspan="4">PAN No.: </td>
+          <td colspan="5">Service Tax Payable By: {{info.lr.serviceTaxBy}}</td>
+          <td>
+              <center>Total</center>
+          </td>
+          <td colspan="2">
+              <center>{{info.lr.total}}</center>
+          </td>
+      </tr>
+      <tr>
+          <td colspan="4" style="background-color: red;"><center><h2>AT OWNERS RISK</h2></center></td>
+          <td colspan="4"><center>Material Received in good Condition</center></td>
+          <td colspan="4"><center>For <br>DHAYRESHWAR TRANSPORT CO</center></td>
+      </tr>
+      <tr>
+          <td rowspan="2" colspan="4" style="font-size: 10px;">Carrier is not responsible for leakage or breakage.
+              This Consignment Note is issued subject to the condition printed overleaf &
+              carrieers Act III of 1965. Declaration by Consignor-I hereby solemnly declare
+              to the Trqansport and all concerned that the particulars of the consignment
+              mentioned in the Lorry Receipt are true and correct and to the entries and
+              description in our books of accounts and other related documents in our possesssion or contact</td>
+          <td rowspan="2" colspan="4" style="vertical-align: bottom;"><center>Receiver's Signature with stamp</center></td>
+          <td rowspan="2" colspan="4" style="vertical-align: bottom;"><center>Authorised Signatory</center></td>
+      </tr>
+  </table>
+</body>
+
+</html>
