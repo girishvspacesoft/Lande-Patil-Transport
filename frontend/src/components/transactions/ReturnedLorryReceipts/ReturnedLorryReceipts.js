@@ -26,7 +26,7 @@ import LoadingSpinner from "../../UI/LoadingSpinner";
 import CustomDialog from "../../UI/Dialog";
 import Dialog from "@mui/material/Dialog";
 
-import { getCustomers } from "../../../lib/api-master";
+import { getBranches, getCustomers } from "../../../lib/api-master";
 import {
   getAllLorryReceiptsWithCount,
   getLorryReceiptsWithCount,
@@ -42,12 +42,13 @@ import "@react-pdf-viewer/default-layout/lib/styles/index.css";
 import { useSelector } from "react-redux";
 import { BILLS_PATH } from "../../../lib/api-base-paths";
 
-const LorryReceipts = (props) => {
+const ReturnedLorryReceipts = (props) => {
   const defaultLayoutPluginInstance = defaultLayoutPlugin();
   const columns = [
     { field: "_id", headerName: "Id" },
-    { field: "wayBillNo", headerName: "LR no.", width: 100 },
-    { field: "formattedDate", headerName: "Date", width: 100 },
+    { field: "sl", headerName: "SR no.", width: 100 },
+    { field: "consigno", headerName: "Consigno", width: 200 },
+    { field: "formattedDate", headerName: "ConsignDate", width: 100 },
     {
       field: "consignor",
       headerName: "Consignor",
@@ -109,7 +110,7 @@ const LorryReceipts = (props) => {
 
         return (
           <>
-            {!params.row.isBlank && (
+            {/* {!params.row.isBlank && (
               <>
                 <IconButton
                   size="small"
@@ -129,7 +130,7 @@ const LorryReceipts = (props) => {
             )}
             <IconButton size="small" onClick={triggerEdit} color="primary">
               <EditIcon />
-            </IconButton>
+            </IconButton> */}
             <IconButton size="small" onClick={triggerDelete} color="error">
               <DeleteIcon />
             </IconButton>
@@ -162,11 +163,12 @@ const LorryReceipts = (props) => {
   useEffect(() => {
     const controller = new AbortController();
     if (page && limit && user) {
-      if (user.type) {
-        const type = undefined;
+      if (user.type && selectedBranch) {
+
+        const type = "return";
         if (user.type.toLowerCase() === "superadmin") {
           setIsLoading(true);
-          getAllLorryReceiptsWithCount(page, limit, filterData, type, controller)
+          getAllLorryReceiptsWithCount(page, limit, filterData, type, selectedBranch._id, controller)
             .then((response) => {
               if (response.message) {
                 setHttpError(response.message);
@@ -185,7 +187,7 @@ const LorryReceipts = (props) => {
           if (user.branch) {           
             setIsLoading(true);
             
-            getLorryReceiptsWithCount(page, user.branch, limit, filterData, type, controller)
+            getLorryReceiptsWithCount(page, user.branch, limit, filterData, type, selectedBranch._id, controller)
               .then((response) => {
                 
                 if (response.message) {
@@ -222,7 +224,7 @@ const LorryReceipts = (props) => {
             setHttpError(response.message);
           } else {
             setHttpError("");
-            const updatedLorryReceipts = lorryReceipts.map((lorryReceipt) => {
+            const updatedLorryReceipts = lorryReceipts.map((lorryReceipt, key) => {
               const consignor = response.filter(
                 (customer) => customer._id === lorryReceipt.consignor
               );
@@ -238,6 +240,7 @@ const LorryReceipts = (props) => {
                   ? consignee[0]
                   : lorryReceipt.consignee,
                 formattedDate: getFormattedDate(lorryReceipt.createdAt),
+                sl: key + 1
               };
             });
             setUpdatedLorryReceipts(updatedLorryReceipts);
@@ -345,11 +348,11 @@ const LorryReceipts = (props) => {
   }, [viewLR, lorryReceipts, downloadFile]);
 
   const handleAddLR = () => {
-    navigate("/transactions/lorryReceipts/addLorryReceipt");
+    navigate("/transactions/returnLorryReceiptList/returnedAddLorryReceipt");
   };
 
   const navigateToEdit = (id) => {
-    navigate("/transactions/lorryReceipts/editLorryReceipt", {
+    navigate("/transactions/returnLorryReceiptList/returnedEditLorryReceipt", {
       state: { lrId: id },
     });
   };
@@ -402,6 +405,30 @@ const LorryReceipts = (props) => {
     setFilterData(quickFilterValues[0] || "");    
   }, []);
 
+  useEffect(() => {
+    const controller = new AbortController();
+
+    setIsLoading(true);
+    getBranches(controller)
+      .then(response => {
+        if (response.messgage) {
+          setHttpError(response.message);
+        } else {
+          setbranches(response);
+          setSelectedBranch(response[0])
+        }
+        setIsLoading(false);
+      })
+      .catch(error => {
+        setHttpError(error.message);
+        setIsLoading(false);
+      });
+
+    return () => {
+      controller.abort();
+    };
+  }, []);
+
   return (
     <>
       {isLoading && <LoadingSpinner />}
@@ -445,7 +472,7 @@ const LorryReceipts = (props) => {
       )}
 
       <div className="page_head">
-        <h1 className="pageHead">Lorry receipts</h1>
+        <h1 className="pageHead">Returnable Lorry receipts</h1>
         <div className="page_actions">
           {selectedBranch && (
             <FormControl
@@ -481,7 +508,7 @@ const LorryReceipts = (props) => {
             className="ml6"
             onClick={handleAddLR}
           >
-            Add a lorry receipt
+            Add return lorry receipt
           </Button>
         </div>
       </div>
@@ -570,4 +597,4 @@ const LorryReceipts = (props) => {
   );
 };
 
-export default LorryReceipts;
+export default ReturnedLorryReceipts;

@@ -23,13 +23,15 @@ export const getLorryReceipts = (branchId, controller) => {
   }).then((response) => response.json());
 };
 
-export const getLorryReceiptsWithCount = (page, branchId, limit, filterData, controller) => {
+export const getLorryReceiptsWithCount = (page, branchId, limit, filterData, type, branch, controller) => {
   return fetch(`${API_BASE_PATH_TRANSACTIONS}/getLorryReceiptsWithCount`, {
     method: "POST",
     body: JSON.stringify({
       branch: branchId,
       pagination: { limit, page: page },
-      filterData
+      filterData,
+      type,
+      branch
     }),
     headers: {
       "Content-Type": "application/json",
@@ -62,10 +64,10 @@ export const getLorryReceiptsWithCountDateRange = (
   ).then((response) => response.json());
 };
 
-export const getAllLorryReceiptsWithCount = (page, limit, filterData, controller) => {
+export const getAllLorryReceiptsWithCount = (page, limit, filterData, type, branch, controller) => {
   return fetch(`${API_BASE_PATH_TRANSACTIONS}/getAllLorryReceiptsWithCount`, {
     method: "POST",
-    body: JSON.stringify({ pagination: { limit, page: page }, filterData }),
+    body: JSON.stringify({ pagination: { limit, page: page }, filterData, type, branch }),
     headers: {
       "Content-Type": "application/json",
     },

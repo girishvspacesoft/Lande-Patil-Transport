@@ -184,6 +184,22 @@ const PaymentCollectionReport = lazy(() =>
   )
 );
 
+const MaterialInwardList = lazy(() =>
+  import("../components/transactions/MaterialInwardList/MaterialInwardList")
+);
+
+const ReturnedLorryReceipts = lazy(() =>
+  import("../components/transactions/ReturnedLorryReceipts/ReturnedLorryReceipts")
+);
+
+const ReturnedAddLorryReceipts = lazy(() =>
+  import("../components/transactions/ReturnedLorryReceipts/ReturnedLorryReceiptAdd")
+);
+
+const ReturnedEditLorryReceipts = lazy(() =>
+  import("../components/transactions/ReturnedLorryReceipts/ReturnedLorryReceiptEdit")
+);
+
 const Unauthorized = lazy(() => import("../pages/Unauthorized"));
 
 const NotFound = lazy(() => import("../components/UI/NotFound"));
@@ -504,8 +520,13 @@ const CustomRoutes = () => {
             <Route path="addLorryReceipt" element={<LorryReceiptAdd />} />
             <Route path="editLorryReceipt" element={<LorryReceiptEdit />} />
           </Route>
-          <Route path="paymentReceipts">
-            <Route index element={<PaymentReceipts />} />
+          <Route path="returnLorryReceiptList">
+            <Route index element={<ReturnedLorryReceipts />} />
+            <Route path="returnedAddLorryReceipt" element={<ReturnedAddLorryReceipts />} />
+            <Route path="returnedEditLorryReceipt" element={<ReturnedEditLorryReceipts />} />
+          </Route>
+          <Route path="MaterialInwardList">
+            <Route index element={<MaterialInwardList />} />
             <Route path="addPaymentReceipt" element={<AddPaymentReceipt />} />
             <Route path="editPaymentReceipt" element={<EditPaymentReceipt />} />
           </Route>

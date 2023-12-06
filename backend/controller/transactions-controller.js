@@ -60,11 +60,14 @@ const getLorryReceiptsWithCount = (req, res, next) => {
   // return res.send({ limit: limit, skip: skip });
 
   LorryReceipt.count(
-    { branch: req.body.branch, active: true, 
+    { branch: req.body.branch, active: true, type: req.body.type, 
       $or: [
       {"consignor": {
         "$in": [new RegExp(req.body.filterData || "")]
       }},
+      {"consigno": {
+        "$in": [new RegExp(req.body.filterData || "")]
+      }},      
       {"consignee": {
         "$in": [new RegExp(req.body.filterData || "")]
       }},
@@ -88,10 +91,13 @@ const getLorryReceiptsWithCount = (req, res, next) => {
         });
       } else {
         
-        LorryReceipt.find({ branch: req.body.branch, active: true, $or: [
+        LorryReceipt.find({ branch: req.body.branch, active: true, type: req.body.type, $or: [
           {"consignor": {
             "$in": [new RegExp(req.body.filterData || "")]
           }},
+          {"consigno": {
+            "$in": [new RegExp(req.body.filterData || "")]
+          }}, 
           {"consignee": {
             "$in": [new RegExp(req.body.filterData || "")]
           }},
@@ -135,10 +141,13 @@ const getAllLorryReceiptsWithCount = (req, res, next) => {
 
   const limit = req.body.pagination.limit || 1000;
   const skip = req.body.pagination.page * limit - limit;
-  LorryReceipt.count({ active: true, $or: [
+  LorryReceipt.count({ active: true, type: req.body.type, branch: req.body.branch, $or: [
     {"consignor": {
       "$in": [new RegExp(req.body.filterData || "")]
     }},
+    {"consigno": {
+      "$in": [new RegExp(req.body.filterData || "")]
+    }}, 
     {"consignee": {
       "$in": [new RegExp(req.body.filterData || "")]
     }},
@@ -157,10 +166,13 @@ const getAllLorryReceiptsWithCount = (req, res, next) => {
         message: "Error fetching lorry count!",
       });
     } else {
-      LorryReceipt.find({ active: true, $or: [
+      LorryReceipt.find({ active: true, type: req.body.type, branch: req.body.branch, $or: [
         {"consignor": {
           "$in": [new RegExp(req.body.filterData || "")]
         }},
+        {"consigno": {
+          "$in": [new RegExp(req.body.filterData || "")]
+        }}, 
         {"consignee": {
           "$in": [new RegExp(req.body.filterData || "")]
         }},
@@ -338,7 +350,10 @@ const addLorryReceipt = async (req, res, next) => {
     const lorryReceipt = new LorryReceipt({
       isBlank: req.body.isBlank,
       branch: req.body.branch,
+      mobile: req.body.mobile,
       wayBillNo: req.body.wayBillNo,
+      type: req.body.type,
+      driverName: req.body.driverName,
       date: req.body.date,
       vehicleNo: req.body.vehicleNo
         ? req.body.vehicleNo.toUpperCase()
@@ -373,10 +388,11 @@ const addLorryReceipt = async (req, res, next) => {
       { sort: { createdAt: -1 } },
       function (err, foundLR) {
         if (foundLR) {
-          lorryReceipt.lrNo = foundLR.lrNo + 1;
+          lorryReceipt.lrNo = foundLR.lrNo + 1; 
         } else {
-          lorryReceipt.lrNo = 1;
+          lorryReceipt.lrNo = 1;          
         }
+        lorryReceipt.consigno = dayjs(req.body.date).format("MM/DD/YY")+"_" + lorryReceipt.lrNo.toString().padStart(6, '0')
         LorryReceipt.create(lorryReceipt, (error, data) => {
           if (error) {
             res.send(error);

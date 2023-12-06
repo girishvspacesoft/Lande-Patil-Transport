@@ -26,7 +26,7 @@ import LoadingSpinner from "../../UI/LoadingSpinner";
 import CustomDialog from "../../UI/Dialog";
 import Dialog from "@mui/material/Dialog";
 
-import { getCustomers } from "../../../lib/api-master";
+import { getBranches, getCustomers } from "../../../lib/api-master";
 import {
   getAllLorryReceiptsWithCount,
   getLorryReceiptsWithCount,
@@ -42,7 +42,7 @@ import "@react-pdf-viewer/default-layout/lib/styles/index.css";
 import { useSelector } from "react-redux";
 import { BILLS_PATH } from "../../../lib/api-base-paths";
 
-const LorryReceipts = (props) => {
+const MaterialInward = (props) => {
   const defaultLayoutPluginInstance = defaultLayoutPlugin();
   const columns = [
     { field: "_id", headerName: "Id" },
@@ -141,7 +141,7 @@ const LorryReceipts = (props) => {
 
   const navigate = useNavigate();
   const user = useSelector((state) => state.user);
-  const [branches, setbranches] = useState([]);
+  const [branches, setBranches] = useState([]);
   const [selectedBranch, setSelectedBranch] = useState(null);
   const [lorryReceipts, setLorryReceipts] = useState([]);
   const [lorryReceiptsCount, setLorryReceiptsCount] = useState(0);
@@ -163,46 +163,7 @@ const LorryReceipts = (props) => {
     const controller = new AbortController();
     if (page && limit && user) {
       if (user.type) {
-        const type = undefined;
-        if (user.type.toLowerCase() === "superadmin") {
-          setIsLoading(true);
-          getAllLorryReceiptsWithCount(page, limit, filterData, type, controller)
-            .then((response) => {
-              if (response.message) {
-                setHttpError(response.message);
-              } else {
-                setLorryReceipts(response.lorryReceipts);
-                setLorryReceiptsCount(response.count);
-                setIsLastPage(response.isLastPage);
-              }
-              setIsLoading(false);
-            })
-            .catch((error) => {
-              setIsLoading(false);
-              setHttpError(error.message);
-            });
-        } else {
-          if (user.branch) {           
-            setIsLoading(true);
-            
-            getLorryReceiptsWithCount(page, user.branch, limit, filterData, type, controller)
-              .then((response) => {
-                
-                if (response.message) {
-                  setHttpError(response.message);
-                } else {
-                  setLorryReceipts(response.lorryReceipts);
-                  setLorryReceiptsCount(response.count);
-                  setIsLastPage(response.isLastPage);
-                }
-                setIsLoading(false);
-              })
-              .catch((error) => {
-                setIsLoading(false);
-                setHttpError(error.message);
-              });
-          }
-        }
+        
       }
     }
     return () => {
@@ -402,6 +363,31 @@ const LorryReceipts = (props) => {
     setFilterData(quickFilterValues[0] || "");    
   }, []);
 
+
+  useEffect(() => {
+    const controller = new AbortController();
+
+    setIsLoading(true);
+    getBranches(controller)
+      .then(response => {
+        if (response.messgage) {
+          setHttpError(response.message);
+        } else {
+          setBranches(response);
+          setSelectedBranch(response[0])
+        }
+        setIsLoading(false);
+      })
+      .catch(error => {
+        setHttpError(error.message);
+        setIsLoading(false);
+      });
+
+    return () => {
+      controller.abort();
+    };
+  }, []);
+
   return (
     <>
       {isLoading && <LoadingSpinner />}
@@ -445,7 +431,7 @@ const LorryReceipts = (props) => {
       )}
 
       <div className="page_head">
-        <h1 className="pageHead">Lorry receipts</h1>
+        <h1 className="pageHead">Material Inward</h1>
         <div className="page_actions">
           {selectedBranch && (
             <FormControl
@@ -481,7 +467,7 @@ const LorryReceipts = (props) => {
             className="ml6"
             onClick={handleAddLR}
           >
-            Add a lorry receipt
+            Add Material Inward
           </Button>
         </div>
       </div>
@@ -570,4 +556,4 @@ const LorryReceipts = (props) => {
   );
 };
 
-export default LorryReceipts;
+export default MaterialInward;

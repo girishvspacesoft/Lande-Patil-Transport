@@ -17,7 +17,22 @@ const LorryReceipt = new Schema(
       required: true,
       unique: true,
     },
+    consigno: {
+      type: String,
+      required: true,
+      unique: true,
+    },
     wayBillNo: {
+      type: String,
+    },
+    driverName: {
+      type: String
+    },
+    type: {
+      type: String,
+      default: "deliver",
+    },
+    mobile: {
       type: String,
     },
     date: {
@@ -79,19 +94,26 @@ const LorryReceipt = new Schema(
           type: String,
           required: true,
         },
-        boxQuantity: {
+        company: {
+          type: String,
+          required: true,
+        },
+        place: {
+          type: String,
+          required: true,
+        },
+        article: {
+          type: String,
+          required: true,
+        },
+        remark: {
+          type: String,
+        },
+        articleNum: {
           type: Number,
           required: true,
         },
-        popQuantity: {
-          type: Number,
-          required: true,
-        },
-        looseQuantity: {
-          type: Number,
-          required: true,
-        }, // looseOuterQuantity
-        loosePiece: {
+        weight: {
           type: Number,
           required: true,
           default: 0,
