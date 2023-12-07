@@ -36,16 +36,18 @@ const PAY_TYPES = [
 
 const initialState = {
   isBlank: false,
+  type: "return",
+  driverName: "",
   branch: "",
   wayBillNo: "",
   date: new Date(),
   vehicleNo: "",
   vehicleType: "",
-  consignor: null,
+  consignor: "",
   consignorGst: "",
   consignorAddress: "",
   consignorFrom: "",
-  consignee: null,
+  consignee: "",
   consigneeGst: "",
   consigneeAddress: "",
   consigneeTo: "",
@@ -53,6 +55,7 @@ const initialState = {
   serviceType: "LTT",
   payType: PAY_TYPES[0],
   remark: "",
+  mobile: ""
 };
 
 const initialErrorState = {
@@ -65,6 +68,14 @@ const initialErrorState = {
     message: "",
   },
   vehicleNo: {
+    invalid: false,
+    message: "",
+  },
+  mobile: {
+    invalid: false,
+    message: "",
+  },
+  driverName: {
     invalid: false,
     message: "",
   },
@@ -85,6 +96,14 @@ const initialErrorState = {
     message: "",
   },
   consigneeTo: {
+    invalid: false,
+    message: "",
+  },
+  materialCost: {
+    invalid: false,
+    message: "",
+  },
+  deliveryInDays: {
     invalid: false,
     message: "",
   },
@@ -221,7 +240,7 @@ const LorryReceiptEdit = () => {
   }, [lrId, customers, places, vehicles]);
 
   const goToLorryReceipts = useCallback(() => {
-    navigate("/transactions/lorryReceipts");
+    navigate("/transactions/returnLorryReceiptList");
   }, [navigate]);
 
   useEffect(() => {
@@ -441,7 +460,7 @@ const LorryReceiptEdit = () => {
   return (
     <>
       {isLoading && <LoadingSpinner />}
-      <h1 className="pageHead">Update a lorry receipt</h1>
+      <h1 className="pageHead">Returnable Lorry Receipt Details</h1>
       {httpError !== "" && (
         <Stack
           sx={{
@@ -502,7 +521,6 @@ const LorryReceiptEdit = () => {
                   name="wayBillNo"
                   id="wayBillNo"
                   inputProps={{ readOnly: true }}
-                  readOnly={true}
                 />
               </FormControl>
             </div>
@@ -513,16 +531,16 @@ const LorryReceiptEdit = () => {
                     label="Date"
                     inputFormat="DD/MM/YYYY"
                     value={lorryReceipt.date}
-                    disableFuture={true}
                     onChange={dateInputChangeHandler.bind(null, "date")}
                     inputProps={
                       {
                         // readOnly: true,
-                        // onFocus: () => {
-                        //   setDateIsOpen(true);
-                        // }
+                        // onFocus: () => setDateFocus(currState => true),
+                        // onBlur: () => setDateFocus(currState => false),
+                        // onClick: (e) => setDateFocus(currState => !currState)
                       }
                     }
+                    closeOnSelect
                     renderInput={(params) => (
                       <TextField name="date" size="small" {...params} />
                     )}
@@ -533,6 +551,7 @@ const LorryReceiptEdit = () => {
                 )}
               </FormControl>
             </div>
+
             <div className="grid-item">
               <FormControl
                 fullWidth
@@ -603,11 +622,47 @@ const LorryReceiptEdit = () => {
                 )}
               </FormControl>
             </div>
-            {user.type.toLowerCase() !== "admin" &&
+            {/* {user.type.toLowerCase() !== "admin" &&
             user.type.toLowerCase() !== "superadmin" ? (
               <div className="grid-item"></div>
-            ) : null}
-            <div className="grid-item"></div>
+            ) : null} */}
+            <div className="grid-item">
+              <FormControl fullWidth size="small" error={formErrors.driverName.invalid}>
+                <TextField
+                  size="small"
+                  variant="outlined"
+                  label="Driver Name"
+                  error={formErrors.driverName.invalid}
+                  value={lorryReceipt.driverName}
+                  onChange={inputChangeHandler}
+                  name="driverName"
+                  id="driverName"
+                />
+                {formErrors.driverName.invalid && (
+                  <FormHelperText>
+                    {formErrors.driverName.message}
+                  </FormHelperText>
+                )}
+              </FormControl>
+            </div>
+            <div className="grid-item">
+              <FormControl fullWidth error={formErrors.mobile.invalid}>
+                <TextField
+                  size="small"
+                  variant="outlined"
+                  label="Mobile"
+                  value={lorryReceipt.mobile}
+                  onChange={inputChangeHandler}
+                  name="mobile"
+                  id="mobile"
+                />
+                {formErrors.mobile.invalid && (
+                  <FormHelperText>
+                    {formErrors.mobile.message}
+                  </FormHelperText>
+                )}
+              </FormControl>
+            </div>
             <div className="grid-item">
               <FormControl
                 fullWidth
@@ -641,7 +696,7 @@ const LorryReceiptEdit = () => {
                 )}
               </FormControl>
             </div>
-            <div className="grid-item">
+            {/* <div className="grid-item">
               <FormControl fullWidth>
                 <TextField
                   size="small"
@@ -653,7 +708,7 @@ const LorryReceiptEdit = () => {
                   id="consignorGst"
                 />
               </FormControl>
-            </div>
+            </div> */}
             <div className="grid-item">
               <FormControl fullWidth>
                 <TextField
@@ -664,7 +719,6 @@ const LorryReceiptEdit = () => {
                   onChange={inputChangeHandler}
                   name="consignorAddress"
                   id="consignorAddress"
-                  inputProps={{ readOnly: true }}
                 />
               </FormControl>
             </div>
@@ -679,7 +733,6 @@ const LorryReceiptEdit = () => {
                   onChange={inputChangeHandler}
                   name="consignorFrom"
                   id="consignorFrom"
-                  inputProps={{ readOnly: true }}
                 />
                 {formErrors.consignorFrom.invalid && (
                   <FormHelperText>
@@ -688,8 +741,9 @@ const LorryReceiptEdit = () => {
                 )}
               </FormControl>
             </div>
+            {/* <div className="grid-item"></div>
             <div className="grid-item"></div>
-            <div className="grid-item"></div>
+            <div className="grid-item"></div> */}
             <div className="grid-item">
               <FormControl
                 fullWidth
@@ -723,7 +777,7 @@ const LorryReceiptEdit = () => {
                 )}
               </FormControl>
             </div>
-            <div className="grid-item">
+            {/* <div className="grid-item">
               <FormControl fullWidth>
                 <TextField
                   size="small"
@@ -735,7 +789,7 @@ const LorryReceiptEdit = () => {
                   id="consigneeGst"
                 />
               </FormControl>
-            </div>
+            </div> */}
             <div className="grid-item">
               <FormControl fullWidth>
                 <TextField
@@ -746,7 +800,6 @@ const LorryReceiptEdit = () => {
                   onChange={inputChangeHandler}
                   name="consigneeAddress"
                   id="consigneeAddress"
-                  inputProps={{ readOnly: true }}
                 />
               </FormControl>
             </div>
@@ -761,7 +814,6 @@ const LorryReceiptEdit = () => {
                   onChange={inputChangeHandler}
                   name="consigneeTo"
                   id="consigneeTo"
-                  inputProps={{ readOnly: true }}
                 />
                 {formErrors.consigneeTo.invalid && (
                   <FormHelperText>
@@ -770,9 +822,10 @@ const LorryReceiptEdit = () => {
                 )}
               </FormControl>
             </div>
+            {/* <div className="grid-item"></div>
             <div className="grid-item"></div>
-            <div className="grid-item"></div>
-            <div className="grid-item">
+            <div className="grid-item"></div> */}
+            {/* <div className="grid-item">
               <FormControl fullWidth size="small">
                 <Autocomplete
                   disablePortal
@@ -791,26 +844,8 @@ const LorryReceiptEdit = () => {
                   )}
                 />
               </FormControl>
-            </div>
-            <div className="grid-item">
-              <FormControl fullWidth size="small">
-                <Autocomplete
-                  disablePortal
-                  autoSelect
-                  size="small"
-                  name="payType"
-                  options={PAY_TYPES}
-                  value={lorryReceipt.payType}
-                  onChange={(e, value) =>
-                    autocompleteChangeListener(e, value, "payType")
-                  }
-                  openOnFocus
-                  renderInput={(params) => (
-                    <TextField {...params} label="Pay type" fullWidth />
-                  )}
-                />
-              </FormControl>
-            </div>
+            </div> */}
+           
             <div className="grid-item">
               <FormControl fullWidth>
                 <TextField
@@ -836,6 +871,7 @@ const LorryReceiptEdit = () => {
                 label="Cancel LR"
               />
             </div>
+           
           </div>
         </Paper>
       </form>
@@ -863,7 +899,7 @@ const LorryReceiptEdit = () => {
             form="lorryReceiptForm"
             className="ml6"
           >
-            Save
+            Update
           </Button>
         </div>
       </Paper>

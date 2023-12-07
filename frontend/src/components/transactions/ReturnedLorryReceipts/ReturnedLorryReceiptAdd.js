@@ -609,10 +609,10 @@ const LorryReceiptAdd = () => {
                 )}
               </FormControl>
             </div>
-            {user.type.toLowerCase() !== "admin" &&
+            {/* {user.type.toLowerCase() !== "admin" &&
             user.type.toLowerCase() !== "superadmin" ? (
               <div className="grid-item"></div>
-            ) : null}
+            ) : null} */}
             <div className="grid-item">
               <FormControl fullWidth size="small" error={formErrors.driverName.invalid}>
                 <TextField
@@ -632,7 +632,24 @@ const LorryReceiptAdd = () => {
                 )}
               </FormControl>
             </div>
-            
+            <div className="grid-item">
+              <FormControl fullWidth error={formErrors.mobile.invalid}>
+                <TextField
+                  size="small"
+                  variant="outlined"
+                  label="Mobile"
+                  value={lorryReceipt.mobile}
+                  onChange={inputChangeHandler}
+                  name="mobile"
+                  id="mobile"
+                />
+                {formErrors.mobile.invalid && (
+                  <FormHelperText>
+                    {formErrors.mobile.message}
+                  </FormHelperText>
+                )}
+              </FormControl>
+            </div>
             <div className="grid-item">
               <FormControl
                 fullWidth
@@ -815,24 +832,7 @@ const LorryReceiptAdd = () => {
                 />
               </FormControl>
             </div> */}
-            <div className="grid-item">
-              <FormControl fullWidth error={formErrors.mobile.invalid}>
-                <TextField
-                  size="small"
-                  variant="outlined"
-                  label="Mobile"
-                  value={lorryReceipt.mobile}
-                  onChange={inputChangeHandler}
-                  name="mobile"
-                  id="mobile"
-                />
-                {formErrors.mobile.invalid && (
-                  <FormHelperText>
-                    {formErrors.mobile.message}
-                  </FormHelperText>
-                )}
-              </FormControl>
-            </div>
+            
             <div className="grid-item">
               <FormControl fullWidth>
                 <TextField

@@ -840,6 +840,8 @@ const updateLorryReceipt = async (req, res, next) => {
           deliveryDate: req.body.deliveryDate,
           closeAndReason: req.body.closeAndReason,
           serviceType: req.body.serviceType,
+          driverName: req.body.driverName,
+          mobile: req.body.mobile,
           updatedBy: req.body.updatedBy,
         },
       },

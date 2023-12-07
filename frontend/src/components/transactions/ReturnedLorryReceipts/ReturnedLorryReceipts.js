@@ -128,9 +128,10 @@ const ReturnedLorryReceipts = (props) => {
                 </IconButton>
               </>
             )}
+            */}
             <IconButton size="small" onClick={triggerEdit} color="primary">
               <EditIcon />
-            </IconButton> */}
+            </IconButton> 
             <IconButton size="small" onClick={triggerDelete} color="error">
               <DeleteIcon />
             </IconButton>
