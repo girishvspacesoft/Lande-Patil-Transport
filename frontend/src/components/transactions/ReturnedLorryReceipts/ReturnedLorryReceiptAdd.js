@@ -12,7 +12,7 @@ import {
   Checkbox,
   FormControlLabel,
 } from "@mui/material";
-
+import dayjs from 'dayjs';
 import Select from "@mui/material/Select";
 import { useSelector } from "react-redux";
 import { Alert, Stack } from "@mui/material";
@@ -21,16 +21,11 @@ import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 
 import { getDataForLR } from "../../../lib/api-master";
-import { addLorryReceipt } from "../../../lib/api-transactions";
+import { addLorryReceipt, viewLorryReceipt } from "../../../lib/api-transactions";
 import LoadingSpinner from "../../UI/LoadingSpinner";
 import TransactionDetails from "./Transaction-Details/TransactionDetails";
-import { getNextLRNumberByBranch, isValidDate } from "../../../lib/helper";
-
-const PAY_TYPES = [
-  { label: "TBB", value: "TBB" },
-  { label: "ToPay", value: "ToPay" },
-  { label: "Paid", value: "Paid" },
-];
+import { getFormattedLRNumber, getNextLRNumberByBranch, isValidDate } from "../../../lib/helper";
+import { BILLS_PATH } from "../../../lib/api-base-paths";
 
 const initialState = {
   isBlank: false,
@@ -50,10 +45,14 @@ const initialState = {
   consigneeAddress: "",
   consigneeTo: "",
   transactions: [],
-  serviceType: "LTT",
-  payType: PAY_TYPES[0],
+  serviceType: "LTT",  
   remark: "",
-  mobile: ""
+  mobile: "",
+  waiting: {
+    isWaiting: false,
+    start: dayjs(),
+    end: dayjs(),
+  }
 };
 
 const initialErrorState = {
@@ -123,6 +122,8 @@ const LorryReceiptAdd = () => {
   const [hasErrors, setHasErrors] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [vehicleTypes, setVehicleTypes] = useState([]);
+  const [isPrint, setPrint] = useState(false);
+  const [isDownload, setDownload] = useState(false);
 
   const navigate = useNavigate();
 
@@ -217,10 +218,34 @@ const LorryReceiptAdd = () => {
       });
     }
   }, [branches, user.branch]);
-
+  const downloadFile = useCallback(
+    (blob, fileName, selectedLR) => {
+      
+      const baseURL =
+        BILLS_PATH + getFormattedLRNumber(selectedLR.lrNo) + ".pdf";
+      fetch(baseURL)
+        .then((res) => res.blob())
+        .then((file) => {
+          let tempUrl = URL.createObjectURL(file);
+          const aTag = document.createElement("a");
+          aTag.href = tempUrl;
+          aTag.download = baseURL.replace(/^.*[\\/]/, "");
+          document.body.appendChild(aTag);
+          aTag.click();
+          URL.revokeObjectURL(tempUrl);
+          aTag.remove();
+        })
+        .catch((err) => {
+          console.log(err);
+        });
+    },
+    []
+  );
   useEffect(() => {
     const controller = new AbortController();
     if (hasErrors) {
+      setPrint(false);
+      setDownload(false);
       return setIsSubmitted(false);
     }
     if (isSubmitted && !hasErrors) {
@@ -233,11 +258,40 @@ const LorryReceiptAdd = () => {
             setIsLoading(false);
             setHttpError(response.message);
           } else {
-            setHttpError("");
-            setFormErrors(initialErrorState);
-            setLorryReceipt(initialState);
-            setIsLoading(false);
-            goToLorryReceipts();
+            setHttpError("");            
+            
+            if(isPrint)  {
+              const controllerView = new AbortController();
+              
+              viewLorryReceipt(response._id, controllerView)
+              .then((responseView) => {
+                if (responseView.message) {
+                  setHttpError(responseView.message);
+                } else {
+                    const selectedLR = response;                  
+                    const path =
+                      BILLS_PATH + getFormattedLRNumber(selectedLR.lrNo) + ".pdf";
+                    window.open(path, "_blank");
+                  
+                }
+                setIsLoading(false);
+                setPrint(false);
+                goToLorryReceipts();
+                controllerView.abort();
+              })
+              .catch((error) => {
+                setHttpError(error.message);
+                setIsLoading(false);
+                setPrint(false);
+                controllerView.abort();
+              });
+              
+            } else {
+              setFormErrors(initialErrorState);
+              setLorryReceipt(initialState);
+              setIsLoading(false);
+              goToLorryReceipts();
+            }
           }
           setIsSubmitted(false);
         })
@@ -250,7 +304,8 @@ const LorryReceiptAdd = () => {
     return () => {
       controller.abort();
     };
-  }, [isSubmitted, hasErrors, lorryReceipt, goToLorryReceipts]);
+  }, [isSubmitted, downloadFile, isPrint, hasErrors, lorryReceipt, goToLorryReceipts]);
+
 
   const resetButtonHandler = () => {
     setLorryReceipt(initialState);
@@ -443,6 +498,13 @@ const LorryReceiptAdd = () => {
       };
     });
   };
+
+  const submitAndPrintHandler = (e) => {
+    e.preventDefault();
+    setFormErrors((currState) => validateForm(lorryReceipt));
+    setIsSubmitted(true);
+    setPrint(true);
+  }
 
   return (
     <>
@@ -895,6 +957,16 @@ const LorryReceiptAdd = () => {
             className="ml6"
           >
             Save
+          </Button>
+          <Button
+            variant="contained"
+            size="medium"
+            type="button"
+            color="primary"            
+            className="ml6"
+            onClick={submitAndPrintHandler}
+          >
+            Save & Print
           </Button>
         </div>
       </Paper>

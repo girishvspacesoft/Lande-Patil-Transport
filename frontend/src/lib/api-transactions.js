@@ -23,7 +23,7 @@ export const getLorryReceipts = (branchId, controller) => {
   }).then((response) => response.json());
 };
 
-export const getLorryReceiptsWithCount = (page, branchId, limit, filterData, type, branch, controller) => {
+export const getLorryReceiptsWithCount = (page, branchId, limit, filterData, type, controller) => {
   return fetch(`${API_BASE_PATH_TRANSACTIONS}/getLorryReceiptsWithCount`, {
     method: "POST",
     body: JSON.stringify({
@@ -31,7 +31,6 @@ export const getLorryReceiptsWithCount = (page, branchId, limit, filterData, typ
       pagination: { limit, page: page },
       filterData,
       type,
-      branch
     }),
     headers: {
       "Content-Type": "application/json",
@@ -145,6 +144,12 @@ export const removeLorryReceipt = (id, controller) => {
 
 export const viewLorryReceipt = (id, controller) => {
   return fetch(`${API_BASE_PATH_TRANSACTIONS}/viewLorryReceipt/${id}`, {
+    signal: controller?.signal,
+  }).then((response) => response.blob());
+};
+
+export const downloadLorryReceipt = (id, controller) => {
+  return fetch(`${API_BASE_PATH_TRANSACTIONS}/downloadLorryReceipt/${id}`, {
     signal: controller?.signal,
   }).then((response) => response.blob());
 };

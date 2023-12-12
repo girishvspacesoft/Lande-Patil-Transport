@@ -21,19 +21,19 @@ import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 
 import { getDataForLR } from "../../../lib/api-master";
-import { addLorryReceipt } from "../../../lib/api-transactions";
+import { addLorryReceipt, downloadLorryReceipt, viewLorryReceipt } from "../../../lib/api-transactions";
 import LoadingSpinner from "../../UI/LoadingSpinner";
 import TransactionDetails from "./Transaction-Details/TransactionDetails";
-import { getNextLRNumberByBranch, isValidDate } from "../../../lib/helper";
-
-const PAY_TYPES = [
-  { label: "TBB", value: "TBB" },
-  { label: "ToPay", value: "ToPay" },
-  { label: "Paid", value: "Paid" },
-];
+import { getFormattedLRNumber, getNextLRNumberByBranch, isValidDate } from "../../../lib/helper";
+import { TimePicker } from "@mui/x-date-pickers";
+import dayjs from "dayjs";
+import ChargesDetails from "./Transaction-Details/ChargesDetails";
+import { BILLS_PATH } from "../../../lib/api-base-paths";
 
 const initialState = {
   isBlank: false,
+  type: "deliver",
+  driverName: "",
   branch: "",
   wayBillNo: "",
   date: new Date(),
@@ -48,9 +48,23 @@ const initialState = {
   consigneeAddress: "",
   consigneeTo: "",
   transactions: [],
-  serviceType: "LTT",
-  payType: PAY_TYPES[0],
+  serviceType: "LTT",  
   remark: "",
+  mobile: "",
+  toBill: "Consignee",
+  waiting: {
+    isWaiting: false,
+    start: dayjs(),
+    end: dayjs(),
+  },
+  chargesDetails: {
+    hamali: 0,
+    octroi: 0,
+    weight: 0,
+    toll: 0,
+    escort: 0,
+    other: 0,
+  }
 };
 
 const initialErrorState = {
@@ -58,11 +72,49 @@ const initialErrorState = {
     invalid: false,
     message: "",
   },
+  chargesDetails: {
+    hamali: {
+      invalid: false,
+      message: "",
+    },
+    octroi: {
+      invalid: false,
+      message: "",
+    },
+    weight: {
+      invalid: false,
+      message: "",
+    },
+    toll: {
+      invalid: false,
+      message: "",
+    },
+    escort: {
+      invalid: false,
+      message: "",
+    },
+    other: {
+      invalid: false,
+      message: "",
+    },
+  },
   date: {
     invalid: false,
     message: "",
   },
+  toBill: {
+    invalid: false,
+    message: "",
+  },
   vehicleNo: {
+    invalid: false,
+    message: "",
+  },
+  mobile: {
+    invalid: false,
+    message: "",
+  },
+  driverName: {
     invalid: false,
     message: "",
   },
@@ -111,8 +163,9 @@ const LorryReceiptAdd = () => {
   const [httpError, setHttpError] = useState("");
   const [hasErrors, setHasErrors] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [isPrint, setPrint] = useState(false);
+  const [isDownload, setDownload] = useState(false);
   const [vehicleTypes, setVehicleTypes] = useState([]);
-
   const navigate = useNavigate();
 
   const user = useSelector((state) => state.user);
@@ -206,18 +259,39 @@ const LorryReceiptAdd = () => {
       });
     }
   }, [branches, user.branch]);
-
+  const downloadFile = useCallback(
+    (blob, fileName, selectedLR) => {
+      
+      const baseURL =
+        BILLS_PATH + getFormattedLRNumber(selectedLR.lrNo) + ".pdf";
+      fetch(baseURL)
+        .then((res) => res.blob())
+        .then((file) => {
+          let tempUrl = URL.createObjectURL(file);
+          const aTag = document.createElement("a");
+          aTag.href = tempUrl;
+          aTag.download = baseURL.replace(/^.*[\\/]/, "");
+          document.body.appendChild(aTag);
+          aTag.click();
+          URL.revokeObjectURL(tempUrl);
+          aTag.remove();
+        })
+        .catch((err) => {
+          console.log(err);
+        });
+    },
+    []
+  );
   useEffect(() => {
     const controller = new AbortController();
     if (hasErrors) {
+      setPrint(false);
+      setDownload(false);
       return setIsSubmitted(false);
     }
     if (isSubmitted && !hasErrors) {
       const updatedLR = JSON.parse(JSON.stringify(lorryReceipt));
-      updatedLR.payType =
-        updatedLR.payType && updatedLR.payType.value
-          ? updatedLR.payType.value
-          : updatedLR.payType;
+     
       setIsLoading(true);
       addLorryReceipt(updatedLR, controller)
         .then((response) => {
@@ -225,11 +299,64 @@ const LorryReceiptAdd = () => {
             setIsLoading(false);
             setHttpError(response.message);
           } else {
-            setHttpError("");
-            setFormErrors(initialErrorState);
-            setLorryReceipt(initialState);
-            setIsLoading(false);
-            goToLorryReceipts();
+            setHttpError("");            
+            
+            if(isPrint)  {
+              const controllerView = new AbortController();
+              
+              viewLorryReceipt(response._id, controllerView)
+              .then((responseView) => {
+                if (responseView.message) {
+                  setHttpError(responseView.message);
+                } else {
+                    const selectedLR = response;                  
+                    const path =
+                      BILLS_PATH + getFormattedLRNumber(selectedLR.lrNo) + ".pdf";
+                    window.open(path, "_blank");
+                  
+                }
+                setIsLoading(false);
+                setPrint(false);
+                goToLorryReceipts();
+                controllerView.abort();
+              })
+              .catch((error) => {
+                setHttpError(error.message);
+                setIsLoading(false);
+                setPrint(false);
+                controllerView.abort();
+              });
+              
+            } else if (isDownload) {
+              const controllerDownload = new AbortController();
+              downloadLorryReceipt(response._id, controllerDownload)
+              .then((responseDownload) => {
+                if (responseDownload.message) {
+                  setHttpError(responseDownload.message);
+                } else {
+                  const selectedLR = response;                  
+                  const name = getFormattedLRNumber(selectedLR.lrNo) + ".pdf";
+                  downloadFile(responseDownload, name, selectedLR);
+                  
+                }
+                
+                setIsLoading(false);
+                setDownload(false);
+                goToLorryReceipts();
+                controllerDownload.abort();
+              })
+              .catch((error) => {
+                setHttpError(error.message);
+                setIsLoading(false);
+                setDownload(false);
+                controllerDownload.abort();
+              });
+            } else {
+              setFormErrors(initialErrorState);
+              setLorryReceipt(initialState);
+              setIsLoading(false);
+              goToLorryReceipts();
+            }
           }
           setIsSubmitted(false);
         })
@@ -242,7 +369,7 @@ const LorryReceiptAdd = () => {
     return () => {
       controller.abort();
     };
-  }, [isSubmitted, hasErrors, lorryReceipt, goToLorryReceipts]);
+  }, [isSubmitted, isDownload, downloadFile, isPrint, hasErrors, lorryReceipt, goToLorryReceipts]);
 
   const resetButtonHandler = () => {
     setLorryReceipt(initialState);
@@ -276,7 +403,9 @@ const LorryReceiptAdd = () => {
   };
 
   const validateForm = (formData) => {
+    
     const errors = { ...initialErrorState };
+    
     if (formData.branch.trim() === "") {
       errors.branch = { invalid: true, message: "Branch is required" };
     }
@@ -294,6 +423,13 @@ const LorryReceiptAdd = () => {
         errors.vehicleType = {
           invalid: true,
           message: "Vehicle type is required",
+        };
+      }
+      
+      if (formData.driverName.trim() === "") {
+        errors.driverName = {
+          invalid: true,
+          message: "Driver Name is required",
         };
       }
       if (!formData.consignor) {
@@ -314,7 +450,93 @@ const LorryReceiptAdd = () => {
           message: "At lease one transaction is required",
         };
       }
+
+      
     }
+
+    // if (formData.chargesDetails.hamali.trim() === "") {      
+    //   errors.chargesDetails.hamali = {
+    //     invalid: true,
+    //     message: "Hamali Number is required",
+    //   };
+    // }
+
+    // if (formData.chargesDetails.octroi.trim() === "") {      
+    //   errors.chargesDetails.octroi = {
+    //     invalid: true,
+    //     message: "Octroi Number is required",
+    //   };
+    // }
+
+    // if (formData.chargesDetails.weight.trim() === "") {      
+    //   errors.chargesDetails.weight = {
+    //     invalid: true,
+    //     message: "Weight Number is required",
+    //   };
+    // }
+
+    // if (formData.chargesDetails.toll.trim() === "") {      
+    //   errors.chargesDetails.toll = {
+    //     invalid: true,
+    //     message: "Toll ch Number is required",
+    //   };
+    // }
+
+    // if (formData.chargesDetails.escort.trim() === "") {      
+    //   errors.chargesDetails.escort = {
+    //     invalid: true,
+    //     message: "Escort Number is required",
+    //   };
+    // }
+
+    // if (formData.chargesDetails.other.trim() === "") {      
+    //   errors.chargesDetails.other = {
+    //     invalid: true,
+    //     message: "Other Number is required",
+    //   };
+    // }
+
+    // if (formData.chargesDetails.hamali.trim() !== "") {      
+    //   errors.chargesDetails.hamali = {
+    //     invalid: false,
+    //     message: "",
+    //   };
+    // }
+
+    // if (formData.chargesDetails.octroi.trim() !== "") {      
+    //   errors.chargesDetails.octroi = {
+    //     invalid: false,
+    //     message: "",
+    //   };
+    // }
+
+    // if (formData.chargesDetails.weight.trim() !== "") {      
+    //   errors.chargesDetails.weight = {
+    //     invalid: false,
+    //     message: "",
+    //   };
+    // }
+
+    // if (formData.chargesDetails.toll.trim() !== "") {      
+    //   errors.chargesDetails.toll = {
+    //     invalid: false,
+    //     message: "",
+    //   };
+    // }
+
+    // if (formData.chargesDetails.escort.trim() !== "") {      
+    //   errors.chargesDetails.escort = {
+    //     invalid: false,
+    //     message: "",
+    //   };
+    // }
+
+    // if (formData.chargesDetails.other.trim() !== "") {      
+    //   errors.chargesDetails.other = {
+    //     invalid: false,
+    //     message: "",
+    //   };
+    // }
 
     let validationErrors = false;
     for (const key in errors) {
@@ -424,10 +646,25 @@ const LorryReceiptAdd = () => {
     });
   };
 
+  const submitAndPrintHandler = (e) => {
+    e.preventDefault();
+    setFormErrors((currState) => validateForm(lorryReceipt));
+    setIsSubmitted(true);
+    setPrint(true);
+  }
+
+  const submitAndDownloadHandler = (e) => {
+    e.preventDefault();
+    setFormErrors((currState) => validateForm(lorryReceipt));
+    setIsSubmitted(true);
+    setDownload(true);
+  }
+
+  
   return (
     <>
       {isLoading && <LoadingSpinner />}
-      <h1 className="pageHead">Add a lorry receipt</h1>
+      <h1 className="pageHead">Add Lorry Receipt Details</h1>
       {httpError !== "" && (
         <Stack
           sx={{
@@ -589,11 +826,44 @@ const LorryReceiptAdd = () => {
                 )}
               </FormControl>
             </div>
-            {user.type.toLowerCase() !== "admin" &&
-            user.type.toLowerCase() !== "superadmin" ? (
-              <div className="grid-item"></div>
-            ) : null}
-            <div className="grid-item"></div>
+            
+            <div className="grid-item">
+              <FormControl fullWidth size="small" error={formErrors.driverName.invalid}>
+                <TextField
+                  size="small"
+                  variant="outlined"
+                  label="Driver Name"
+                  error={formErrors.driverName.invalid}
+                  value={lorryReceipt.driverName}
+                  onChange={inputChangeHandler}
+                  name="driverName"
+                  id="driverName"
+                />
+                {formErrors.driverName.invalid && (
+                  <FormHelperText>
+                    {formErrors.driverName.message}
+                  </FormHelperText>
+                )}
+              </FormControl>
+            </div>
+            <div className="grid-item">
+              <FormControl fullWidth error={formErrors.mobile.invalid}>
+                <TextField
+                  size="small"
+                  variant="outlined"
+                  label="Mobile"
+                  value={lorryReceipt.mobile}
+                  onChange={inputChangeHandler}
+                  name="mobile"
+                  id="mobile"
+                />
+                {formErrors.mobile.invalid && (
+                  <FormHelperText>
+                    {formErrors.mobile.message}
+                  </FormHelperText>
+                )}
+              </FormControl>
+            </div>
             <div className="grid-item">
               <FormControl
                 fullWidth
@@ -627,19 +897,7 @@ const LorryReceiptAdd = () => {
                 )}
               </FormControl>
             </div>
-            <div className="grid-item">
-              <FormControl fullWidth>
-                <TextField
-                  size="small"
-                  variant="outlined"
-                  label="Consignor GST no."
-                  value={lorryReceipt.consignorGst}
-                  onChange={inputChangeHandler}
-                  name="consignorGst"
-                  id="consignorGst"
-                />
-              </FormControl>
-            </div>
+            
             <div className="grid-item">
               <FormControl fullWidth>
                 <TextField
@@ -672,8 +930,7 @@ const LorryReceiptAdd = () => {
                 )}
               </FormControl>
             </div>
-            <div className="grid-item"></div>
-            <div className="grid-item"></div>
+            
             <div className="grid-item">
               <FormControl
                 fullWidth
@@ -707,19 +964,7 @@ const LorryReceiptAdd = () => {
                 )}
               </FormControl>
             </div>
-            <div className="grid-item">
-              <FormControl fullWidth>
-                <TextField
-                  size="small"
-                  variant="outlined"
-                  label="Consignee GST no."
-                  value={lorryReceipt.consigneeGst}
-                  onChange={inputChangeHandler}
-                  name="consigneeGst"
-                  id="consigneeGst"
-                />
-              </FormControl>
-            </div>
+            
             <div className="grid-item">
               <FormControl fullWidth>
                 <TextField
@@ -752,46 +997,31 @@ const LorryReceiptAdd = () => {
                 )}
               </FormControl>
             </div>
-            <div className="grid-item"></div>
-            <div className="grid-item"></div>
+            
             <div className="grid-item">
-              <FormControl fullWidth size="small">
-                <Autocomplete
-                  disablePortal
-                  autoSelect
-                  autoHighlight={true}
-                  size="small"
-                  name="serviceType"
-                  options={["LTT"]}
-                  value={lorryReceipt.serviceType}
-                  onChange={(e, value) =>
-                    autocompleteChangeListener(e, value, "serviceType")
-                  }
-                  openOnFocus
-                  renderInput={(params) => (
-                    <TextField {...params} label="Service type" fullWidth />
-                  )}
-                />
-              </FormControl>
-            </div>
-            <div className="grid-item">
-              <FormControl fullWidth size="small">
-                <Autocomplete
-                  disablePortal
-                  autoSelect
-                  autoHighlight={true}
-                  size="small"
-                  name="payType"
-                  options={PAY_TYPES}
-                  value={lorryReceipt.payType}
-                  onChange={(e, value) =>
-                    autocompleteChangeListener(e, value, "payType")
-                  }
-                  openOnFocus
-                  renderInput={(params) => (
-                    <TextField {...params} label="Pay type" fullWidth />
-                  )}
-                />
+              <FormControl
+                fullWidth
+                size="small"                  
+              >
+                <InputLabel id="toBill">To Bill</InputLabel>
+                <Select
+                  labelId="toBill"
+                  name="toBill"
+                  label="To Bill"
+                  value={lorryReceipt.toBill}
+                  onChange={inputChangeHandler}
+                >
+                  {
+                    ["Consignee", "Consignor"].map((value) => (
+                      <MenuItem
+                        key={value}
+                        value={value}
+                        className="menuItem"
+                      >
+                        {value}
+                      </MenuItem>
+                    ))}
+                </Select>                  
               </FormControl>
             </div>
             <div className="grid-item">
@@ -807,6 +1037,7 @@ const LorryReceiptAdd = () => {
                 />
               </FormControl>
             </div>
+                             
             <div className="grid-item">
               <FormControlLabel
                 control={
@@ -819,7 +1050,72 @@ const LorryReceiptAdd = () => {
                 label="Cancel LR"
               />
             </div>
+
+           
           </div>
+            <div>
+              <FormControlLabel
+                control={
+                  <Checkbox
+                    name="waiting"      
+                    checked={lorryReceipt.waiting.isWaiting}
+                    onChange={(e) => setLorryReceipt(currentState => {
+                      
+                      return {
+                        ...currentState,
+                        waiting: {
+                          ...currentState.waiting,
+                          isWaiting: e.currentTarget.checked
+                        }
+                      }
+                    })}             
+                  />
+                }
+                
+                label="Waiting"
+              />
+              <FormControl>
+                <LocalizationProvider dateAdapter={AdapterDayjs}>            
+                  <TimePicker
+                    disabled={!lorryReceipt.waiting.isWaiting}
+                    value={lorryReceipt.waiting.start}
+                    size="small"
+                    label="From"                    
+                    onChange={(newValue) => setLorryReceipt(currentState => {
+                      return {
+                        ...currentState,
+                        waiting: {
+                          ...currentState.waiting,
+                          start: newValue
+                        }
+                      }
+                    })}
+                    renderInput={params => <TextField {...params} style={{width: '135px'}} size="small" variant="outlined" />}
+                  />                
+                </LocalizationProvider>
+              </FormControl>
+              &nbsp;&nbsp;&nbsp;&nbsp;
+              <FormControl>
+                <LocalizationProvider dateAdapter={AdapterDayjs}>            
+                  <TimePicker
+                  disabled={!lorryReceipt.waiting.isWaiting}
+                    value={lorryReceipt.waiting.end}
+                    size="small"
+                    label="End"                    
+                    onChange={(newValue) => setLorryReceipt(currentState => {
+                      return {
+                        ...currentState,
+                        waiting: {
+                          ...currentState.waiting,
+                          end: newValue
+                        }
+                      }
+                    })}
+                    renderInput={params => <TextField {...params} style={{width: '135px'}} size="small" variant="outlined" />}
+                  />                
+                </LocalizationProvider>
+              </FormControl>
+            </div>
         </Paper>
       </form>
       <h2 className="mb20">Transactions details</h2>
@@ -830,9 +1126,17 @@ const LorryReceiptAdd = () => {
         <TransactionDetails
           lorryReceipt={lorryReceipt}
           setLorryReceipt={setLorryReceipt}
+         
         />
       </Paper>
-
+      <h2 className="mb20">Charges details</h2>
+      <Paper sx={{ padding: "20px", marginBottom: "20px" }}>
+        <ChargesDetails
+          lorryReceipt={lorryReceipt}
+          setLorryReceipt={setLorryReceipt}
+          formErrors={formErrors}
+        />
+      </Paper>
       <Paper sx={{ padding: "20px", marginBottom: "20px" }}>
         <div className="right">
           <Button variant="outlined" size="medium" onClick={backButtonHandler}>
@@ -855,6 +1159,27 @@ const LorryReceiptAdd = () => {
             className="ml6"
           >
             Save
+          </Button>
+          
+          <Button
+            variant="contained"
+            size="medium"
+            type="button"
+            color="primary"            
+            className="ml6"
+            onClick={submitAndPrintHandler}
+          >
+            Save & Print
+          </Button>
+          <Button
+            variant="contained"
+            size="medium"
+            type="button"
+            color="primary"            
+            className="ml6"
+            onClick={submitAndDownloadHandler}
+          >
+            Save & PDF Print
           </Button>
         </div>
       </Paper>

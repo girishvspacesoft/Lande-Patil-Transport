@@ -11,6 +11,9 @@
       zoom: 0.55;
     }
     * {padding: 0; margin: 0;}
+    p{
+      margin: 5px 0px;
+    }
     body {
       font-family: Arial, Helvetica, sans-serif;
       font-size: 9pt;
@@ -93,7 +96,7 @@
         <td>
           <table>
             <tr class="header">
-              <td class="logo_bg">
+              <!-- <td class="logo_bg">
                 <svg
                   version="1.1"
                   id="Layer_1"
@@ -225,20 +228,17 @@
                     </g>
                   </g>
                 </svg>
-              </td>
+              </td> -->
               <td class="address">
-                <h2>JRV TRANSLINES</h2>
+                <h2>LANDE PATIL TRANSPORT PVT. LTD.</h2>
+                <h3><strong>TRANSPORT CONTRACTORS</strong></h3>
                 <p>
-                  <strong>Address:</strong> Bhekrai Mata School, 3rd Floor,
-                  Office No. 1, Narayan Chamber, Saswad Road, Bhekrai Nagar,
-                  S.N. 177/1, Namdev Rukari Baug, Phursungi, Pune, Maharashtra
-                  412308
+                  <strong>Address:</strong> S/A/5-2, 'S' BLOCK, M.I.D.C BHOSARI, PUNE.Dist. Pune - 411026
                 </p>
                 <p>
-                  <strong>GST No.</strong>: 27AASFJ8501D1Z9,
-                  <strong>FSSAI No.</strong>: 11523081000025
-                  <strong>Email</strong>: jrvtranslines@rediffmail.com,
-                  office@jrvtranslines.com, <strong>Mobile</strong>: 9689887241
+                  <strong>GST No.</strong>: ,
+                  <strong>FSSAI No.</strong>: 
+                  <strong>Email</strong>: , <strong>Mobile</strong>: 27120356, 27127598, <strong>FAX</strong> : 27110948
                   / 42 / 43 / 52
                 </p>
                 <h3>GOODS ASSIGNMENT NOTE</h3>
@@ -266,7 +266,7 @@
               <td>{{info.lr.vehicleNo}}</td>
               <td>{{info.lr.from}}</td>
               <td>{{info.lr.to}}</td>
-              <td>{{info.vehicleType.type}}</td>
+              <td>{{info.lr.vehicleType}}</td>
             </tr>
           </table>
         </td>
@@ -292,235 +292,70 @@
       <tr>
         <td>
           <table>
-            <tr class="head">
+            <tr style="height: 30px;" class="head">
               <td>Sr No.</td>
+              <td>Description</td>
+              <td>Place</td>
               <td>Invoice No.</td>
-              <td>Box Quantity</td>
-              <td>Pop Quantity</td>
-              <td>Loose Outer Quantity</td>
-              <td>Loose Piece Quantity</td>
+              <td>Qty.</td>
+              <td>Remark</td>
             </tr>
-            {{#info.lr.transactions}}
-            <tr>
+            
+            <tr style="height: 1200px; vertical-align: top;">
               <td class="center" width="4%">
-                <p>{{sr}}</p>
+                {{#info.lr.transactions}}
+                  <p>{{sr}}</p>
+                {{/info.lr.transactions}}
               </td>
               <td class="center" width="36%">
-                <p>{{invoiceNo}}</p>
+                {{#info.lr.transactions}}
+                  <p>{{company}}</p>
+                {{/info.lr.transactions}}
               </td>
               <td class="center" width="12%">
-                <p>{{boxQuantity}}</p>
+                {{#info.lr.transactions}}
+                  <p>{{place}}</p>
+                {{/info.lr.transactions}}
               </td>
               <td class="center" width="12%">
-                <p>{{popQuantity}}</p>
+                {{#info.lr.transactions}}
+                  <p>{{invoiceNo}}</p>
+                {{/info.lr.transactions}}               
               </td>
               <td class="center" width="12%">
-                <p>{{looseQuantity}}</p>
+                {{#info.lr.transactions}}
+                  <p>{{weight}}</p>
+                {{/info.lr.transactions}}
               </td>
               <td class="center" width="12%">
-                <p>{{loosePiece}}</p>
+                {{#info.lr.transactions}}
+                  <p>{{remark}}</p>
+                {{/info.lr.transactions}}
               </td>
             </tr>
-            {{/info.lr.transactions}} {{#info.lr.blank.length}}
-            {{#info.lr.blank}}
-            <tr>
-              <td class="center">
-                <p>&nbsp;</p>
-              </td>
-              <td class="center">
-                <p>&nbsp;</p>
-              </td>
-              <td class="center">
-                <p>&nbsp;</p>
-              </td>
-              <td class="center">
-                <p>&nbsp;</p>
-              </td>
-              <td class="center">
-                <p>&nbsp;</p>
-              </td>
-              <td class="center">
-                <p>&nbsp;</p>
-              </td>
-            </tr>
-            {{/info.lr.blank}} {{/info.lr.blank.length}}
-            <!-- <tr>
-            <td>aasd</td>
-            <td>aasd</td>
-            <td>aasd</td>
-            <td>aasd</td>
-            <td>aasd</td>
-          </tr>
-          <tr>
-            <td>aasd</td>
-            <td>aasd</td>
-            <td>aasd</td>
-            <td>aasd</td>
-            <td>aasd</td>
-          </tr>
-          <tr>
-            <td>aasd</td>
-            <td>aasd</td>
-            <td>aasd</td>
-            <td>aasd</td>
-            <td>aasd</td>
-          </tr>
-          <tr>
-            <td>aasd</td>
-            <td>aasd</td>
-            <td>aasd</td>
-            <td>aasd</td>
-            <td>aasd</td>
-          </tr>
-          <tr>
-            <td>aasd</td>
-            <td>aasd</td>
-            <td>aasd</td>
-            <td>aasd</td>
-            <td>aasd</td>
-          </tr>
-          <tr>
-            <td>aasd</td>
-            <td>aasd</td>
-            <td>aasd</td>
-            <td>aasd</td>
-            <td>aasd</td>
-          </tr>
-          <tr>
-            <td>aasd</td>
-            <td>aasd</td>
-            <td>aasd</td>
-            <td>aasd</td>
-            <td>aasd</td>
-          </tr> -->
-            <tr>
-              <td colspan="2"><strong>Total</strong></td>
-              <td class="center">
-                <strong>{{info.total.boxQuantity}}</strong>
-              </td>
-              <td class="center">
-                <strong>{{info.total.popQuantity}}</strong>
-              </td>
-              <td class="center">
-                <strong>{{info.total.looseQuantity}}</strong>
-              </td>
-              <td class="center">
-                <strong>{{info.total.loosePiece}}</strong>
-              </td>
-            </tr>
-            <tr>
-              <td class="head h18mm" colspan="2">Total Invoice Value</td>
-              <td class="center">{{info.total.boxQuantity}}</td>
-              <td class="head">Authorized Signatory</td>
-              <td>&nbsp;</td>
-              <td class="head">{{info.lr.payType}}</td>
-            </tr>
+                       
+          
           </table>
         </td>
       </tr>
+     
       <tr>
         <td>
-          <table>
-            <tr>
-              <td width="7%" class="center"><strong>Sr. No.</strong></td>
-              <td width="93%"><strong>Terms and Conditions</strong></td>
-            </tr>
-            <tr>
-              <td class="center smaller">1</td>
-              <td class="smaller">
-                All Consignments / Containers are carried entirely at Owner's
-                Risk. Consignor / Consignee should take out their own insurance
-                to protect themselves against any or all risk at their direction
-                and on their own account.
+          <table class="bdrBtm">   
+            <tr style="border-top: none;">
+              <td colspan="8">
+                Remark : {{info.lr.remark}}
               </td>
-            </tr>
-            <tr>
-              <td class="center smaller">2</td>
-              <td class="smaller">
-                The company is not responsible for loss or damage of goods or
-                container by leakage, breakage, evaporation, weather conditions,
-                Strike, lockouts, roads/rivers hazards, default staff / labours
-                and shipping agent company, riots, civil or political
-                disturbances, Explosion, fire or accident to vehicle by which
-                goods / containers are transported.
+              
+            </tr>       
+            <tr style="vertical-align: top;">
+              <td style="border-right: none;" colspan="4">
+                Note : We are not responsible for damage & breakage.
               </td>
-            </tr>
-            <tr>
-              <td class="center smaller">3</td>
-              <td class="smaller">
-                All Disputes pertaining to Consignment covered by this receipt
-                will be settled at Pune as the same is subject to the
-                JURISDICTION OF COURTS OF PUNE ONLY.
-              </td>
-            </tr>
-            <tr>
-              <td class="center smaller">4</td>
-              <td class="smaller">
-                The consignee or their representative making false declaration
-                as the contents, description, or quantity of goods / weight of
-                goods stuffed in container will be held liable for any damage
-                which carrier may sustain as a result of such false declaration.
-                Consignor / Consignee or their representative will therefore
-                declare his goods correctly and take every precaution to comply
-                with custom or Government’s regulation if fore from time to
-                time. The carrier will not be responsible, if any goods are
-                declared to be contraband and are confiscated by any government,
-                consignee or their representative is liable for all consequences
-                arising out of incorrect declaration of the consignment.
-              </td>
-            </tr>
-            <tr>
-              <td class="center smaller">5</td>
-              <td class="smaller">
-                The consignor or their Agent / representative is responsible to
-                obtain and handover to the company or their at time to loading /
-                stuffing container’s, appropriate permits, documents for
-                transport by road, in case of restricted articles in case of
-                failure, consignor will be held responsible for the consequences
-                arising out of such transport without permit / documents.
-              </td>
-            </tr>
-            <tr>
-              <td class="center smaller">6</td>
-              <td class="smaller">
-                The stuffing / DE stuffing of the containers must be complete
-                within one clear shift or as contract, failing which detention
-                as per contract will be charged.
-              </td>
-            </tr>
-            <tr>
-              <td class="center smaller">7</td>
-              <td class="smaller">
-                Loaded / Empty container must be taken inside docks/ Container
-                yard immediately, on arrival failing which detention of vehicle
-                will be charged. The conditions are subject to change without
-                notice. Received the consignment as particulars.
-              </td>
-            </tr>
-          </table>
-        </td>
-      </tr>
-      <tr>
-        <td>
-          <table class="bdrBtm">
-            <tr class="head">
-              <td>Truck Reported Date</td>
-              <td>Truck Reported Time</td>
-              <td>Truck Release Date</td>
-              <td>Truck Release Time</td>
-              <td>Stamp with Date & Time</td>
-            </tr>
-            <tr class="sign_spacer">
-              <td>&nbsp;</td>
-              <td>&nbsp;</td>
-              <td>&nbsp;</td>
-              <td>&nbsp;</td>
-              <td rowspan="2">&nbsp;</td>
-            </tr>
-            <tr>
-              <td colspan="4">
-                Received the above noted consignment in sound and in good
-                condition from JRV Translines
+              <td style="border-left: none;" colspan="4">
+                <h2 style="text-align: center;"><sup>For</sup> LANDE PATIL TRANSPORT PVT. LTD.</h2>
+                <br/><br/><br/>
+                <p style="text-align: center;">Signature</p>
               </td>
             </tr>
           </table>

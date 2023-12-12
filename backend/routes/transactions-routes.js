@@ -117,6 +117,8 @@ routes
 
 //View bill
 routes.route("/viewLorryReceipt/:id").get(transactionsCtrl.viewLorryReceipt);
+//download bill
+routes.route("/downloadLorryReceipt/:id").get(transactionsCtrl.downloadLorryReceipt);
 
 //Get a lorry receipt by id
 routes.route("/getLorryReceipt/:id").get(transactionsCtrl.getLorryReceipt);

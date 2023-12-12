@@ -2,6 +2,7 @@ const mongoose = require("mongoose");
 const Schema = mongoose.Schema;
 const ObjectId = Schema.ObjectId;
 const pdf = require("html-pdf");
+const dayjs = require('dayjs');
 const options = {
   format: "Letter",
   orientation: "portrait",
@@ -60,7 +61,7 @@ const getLorryReceiptsWithCount = (req, res, next) => {
   // return res.send({ limit: limit, skip: skip });
 
   LorryReceipt.count(
-    { branch: req.body.branch, active: true, type: req.body.type, 
+    { branch: new RegExp(req.body.branch || ""), active: true, type: req.body.type, 
       $or: [
       {"consignor": {
         "$in": [new RegExp(req.body.filterData || "")]
@@ -91,7 +92,7 @@ const getLorryReceiptsWithCount = (req, res, next) => {
         });
       } else {
         
-        LorryReceipt.find({ branch: req.body.branch, active: true, type: req.body.type, $or: [
+        LorryReceipt.find({ branch: new RegExp(req.body.branch || ""), active: true, type: req.body.type, $or: [
           {"consignor": {
             "$in": [new RegExp(req.body.filterData || "")]
           }},
@@ -141,7 +142,7 @@ const getAllLorryReceiptsWithCount = (req, res, next) => {
 
   const limit = req.body.pagination.limit || 1000;
   const skip = req.body.pagination.page * limit - limit;
-  LorryReceipt.count({ active: true, type: req.body.type, branch: req.body.branch, $or: [
+  LorryReceipt.count({ active: true, type: req.body.type, branch: new RegExp(req.body.branch || ""), $or: [
     {"consignor": {
       "$in": [new RegExp(req.body.filterData || "")]
     }},
@@ -166,7 +167,7 @@ const getAllLorryReceiptsWithCount = (req, res, next) => {
         message: "Error fetching lorry count!",
       });
     } else {
-      LorryReceipt.find({ active: true, type: req.body.type, branch: req.body.branch, $or: [
+      LorryReceipt.find({ active: true, type: req.body.type, branch: new RegExp(req.body.branch || ""), $or: [
         {"consignor": {
           "$in": [new RegExp(req.body.filterData || "")]
         }},
@@ -351,6 +352,8 @@ const addLorryReceipt = async (req, res, next) => {
       isBlank: req.body.isBlank,
       branch: req.body.branch,
       mobile: req.body.mobile,
+      toBill: req.body.toBill,
+      waiting: req.body.waiting,
       wayBillNo: req.body.wayBillNo,
       type: req.body.type,
       driverName: req.body.driverName,
@@ -372,12 +375,14 @@ const addLorryReceipt = async (req, res, next) => {
       deliveryAt: req.body.deliveryAt,
       payType: req.body.payType,
       remark: req.body.remark,
+      payment: req.body.payment,
       transactions: req.body.transactions,
       unloadTo: req.body.unloadTo,
       unloadDate: req.body.unloadDate,
       unloadBranch: req.body.unloadBranch,
       deliveryDate: req.body.deliveryDate,
       closeAndReason: req.body.closeAndReason,
+      chargesDetails: req.body.chargesDetails,      
       serviceType: req.body.serviceType,
       createdBy: req.body.createdBy,
     });
@@ -789,6 +794,125 @@ const viewLorryReceipt = (req, res, next) => {
   });
 };
 
+const downloadLorryReceipt = (req, res, next) => {
+  let LRData;
+  let fetchedConsignor;
+  let fetchedConsignee;
+
+  LorryReceipt.findById(req.params.id, (error, data) => {
+    if (error) {
+      res.json({ message: error.message });
+    } else {
+      LRData = JSON.parse(JSON.stringify(data));
+      LRData.date = getFormattedDate(data.date);
+      LRData.time = dayjs(data.date).format('HH:MM A');
+      LRData.LRNo = LRData.wayBillNo;
+      const total = {
+        boxQuantity: 0,
+        popQuantity: 0,
+        looseQuantity: 0,
+        loosePiece: 0,
+      };
+      LRData.transactions.forEach((transaction, index) => {
+        transaction.sr = index + 1;
+        total.boxQuantity = total.boxQuantity + transaction.boxQuantity;
+        total.popQuantity = total.popQuantity + transaction.popQuantity;
+        total.looseQuantity = total.looseQuantity + transaction.looseQuantity;
+        total.loosePiece = total.loosePiece + transaction.loosePiece;
+      });
+      const blankRows = [];
+      if (LRData.transactions.length < 8) {
+        for (let i = LRData.transactions.length; i < 20; i = i + 1) {
+          blankRows.push({ sr: "-" });
+        }
+      }
+      LRData.blank = blankRows;
+
+      Customer.findOne(
+        { name: LRData.consignee.toUpperCase() },
+        (consigneeError, consignee) => {
+          if (consigneeError) {
+            return res.status(400).json({ message: consigneeError.message });
+          }
+          fetchedConsignee = consignee;
+          Customer.findOne(
+            { name: LRData.consignor.toUpperCase() },
+            (consignorError, consignor) => {
+              if (consignorError) {
+                return res
+                  .status(400)
+                  .json({ message: consignorError.message });
+              }
+              fetchedConsignor = consignor;
+
+              Vehicle.findOne(
+                { vehicleNo: LRData.vehicleNo.toUpperCase() },
+                (vehicleErr, vehicleData) => {
+                  if (vehicleErr) {
+                    return res
+                      .status(400)
+                      .json({ message: vehicleErr.message });
+                  }
+                  if (vehicleData._id) {
+                    VehicleType.findOne(
+                      {
+                        type: vehicleData.vehicleType.toUpperCase(),
+                      },
+                      (vehicleTypeErr, vehicleTypeData) => {
+                        if (vehicleTypeErr) {
+                          return res
+                            .status(400)
+                            .json({ message: vehicleTypeErr.message });
+                        }
+                        const templatePath =
+                          path.join(__dirname, "../bills/") +
+                          "LR-Receipt-lpt-pdf.html";
+                        res.render(
+                          templatePath,
+                          {
+                            info: {
+                              lr: LRData,
+                              consignee: fetchedConsignee,
+                              consignor: fetchedConsignor,
+                              vehicleType: vehicleTypeData,
+                              total: total,
+                            },
+                          },
+                          (err, HTML) => {
+                            const finalPath = path.join(__dirname, "../bills/");
+                            const fileName = getFormattedLRNo(
+                              pad(LRData.lrNo, 6)
+                            );
+                            pdf
+                              .create(HTML, options)
+                              .toFile(
+                                path.join(finalPath, fileName + ".pdf"),
+                                (err, result) => {
+                                  if (err) {
+                                    return res.status(400).send({
+                                      message: err,
+                                    });
+                                  }
+                                  return res.sendFile(result.filename);
+                                }
+                              );
+                          }
+                        );
+                      }
+                    );
+                  } else {
+                    res.json({ message: "Vehicle not found" });
+                  }
+                }
+              );
+            }
+          );
+        }
+      );
+    }
+  });
+};
+
 const getLorryReceipt = (req, res, next) => {
   if (!req.params.id) {
     return res.status(400).json({ message: "Lorry receipt ID is required!" });
@@ -842,7 +966,11 @@ const updateLorryReceipt = async (req, res, next) => {
           serviceType: req.body.serviceType,
           driverName: req.body.driverName,
           mobile: req.body.mobile,
+          chargesDetails: req.body.chargesDetails,
+          waiting: req.body.waiting,
+          toBill: req.body.toBill,
           updatedBy: req.body.updatedBy,
+          consigno: dayjs(req.body.date).format("MM/DD/YY")+"_" + req.body.lrNo.toString().padStart(6, '0')
         },
       },
       { new: true },
@@ -2543,6 +2671,7 @@ module.exports = {
   addLorryReceipt,
   removeLorryReceipt,
   viewLorryReceipt,
+  downloadLorryReceipt,
   getLorryReceipt,
   updateLorryReceipt,
   updateLorryReceiptAck,

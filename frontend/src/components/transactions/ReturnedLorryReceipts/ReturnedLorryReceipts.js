@@ -110,7 +110,7 @@ const ReturnedLorryReceipts = (props) => {
 
         return (
           <>
-            {/* {!params.row.isBlank && (
+            {!params.row.isBlank && (
               <>
                 <IconButton
                   size="small"
@@ -123,12 +123,12 @@ const ReturnedLorryReceipts = (props) => {
                 <IconButton size="small" onClick={triggerView} color="primary">
                   <VisibilityIcon />
                 </IconButton>
-                <IconButton size="small" onClick={triggerEmail} color="primary">
+                {/* <IconButton size="small" onClick={triggerEmail} color="primary">
                   <EmailIcon />
-                </IconButton>
+                </IconButton> */}
               </>
             )}
-            */}
+           
             <IconButton size="small" onClick={triggerEdit} color="primary">
               <EditIcon />
             </IconButton> 
@@ -149,7 +149,7 @@ const ReturnedLorryReceipts = (props) => {
   const [lorryReceiptsCount, setLorryReceiptsCount] = useState(0);
   const [isLastPage, setIsLastPage] = useState(0);
   const [page, setPage] = useState(1);
-  const [limit, setLimit] = useState(100);
+  const [limit, setLimit] = useState(10);
   const [updatedLorryReceipts, setUpdatedLorryReceipts] = useState([]);
   const [httpError, setHttpError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -188,7 +188,7 @@ const ReturnedLorryReceipts = (props) => {
           if (user.branch) {           
             setIsLoading(true);
             
-            getLorryReceiptsWithCount(page, user.branch, limit, filterData, type, selectedBranch._id, controller)
+            getLorryReceiptsWithCount(page, user.branch, limit, filterData, type, controller)
               .then((response) => {
                 
                 if (response.message) {
@@ -446,9 +446,7 @@ const ReturnedLorryReceipts = (props) => {
 
       {file && (
         <Dialog open={showFile} onClose={handleClose} fullScreen>
-          {/* <Document file={file} onLoadSuccess={onDocumentLoadSuccess} onLoadError={onDocumentLoadError}>
-        <Page height={800} pageNumber={pageNumber} />
-      </Document> */}
+          
           <AppBar sx={{ position: "relative" }}>
             <Toolbar>
               <IconButton
@@ -475,7 +473,8 @@ const ReturnedLorryReceipts = (props) => {
       <div className="page_head">
         <h1 className="pageHead">Returnable Lorry receipts</h1>
         <div className="page_actions">
-          {selectedBranch && (
+          {selectedBranch && (user.type.toLowerCase() === "admin" ||
+            user.type.toLowerCase() === "superadmin") && (
             <FormControl
               size="small"
               sx={{ width: "150px", marginRight: "5px" }}

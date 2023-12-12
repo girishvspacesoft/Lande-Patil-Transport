@@ -7,14 +7,41 @@ import DeleteIcon from "@mui/icons-material/Delete";
 
 const initialState = {
   invoiceNo: "",
-  boxQuantity: "",
-  popQuantity: "",
-  looseQuantity: "",
-  loosePiece: "",
+  article: "",
+  company: "",
+  place: "",
+  articleNum: 0,
+  weight: 0,
+  remark: "",
+  payment: 0,
 };
 
 const initialErrorState = {
   invoiceNo: {
+    invalid: false,
+    message: "",
+  },
+  company: {
+    invalid: false,
+    message: "",
+  },
+  place: {
+    invalid: false,
+    message: "",
+  },
+  article: {
+    invalid: false,
+    message: "",
+  },
+  articleNum: {
+    invalid: false,
+    message: "",
+  },
+  weight: {
+    invalid: false,
+    message: "",
+  },
+  payment: {
     invalid: false,
     message: "",
   },
@@ -23,10 +50,13 @@ const initialErrorState = {
 const TransactionDetails = ({ lorryReceipt, setLorryReceipt }) => {
   const columns = [
     { field: "invoiceNo", headerName: "Invoice No", flex: 1 },
-    { field: "boxQuantity", headerName: "Box quantity", flex: 1 },
-    { field: "popQuantity", headerName: "Pop quantity", flex: 1 },
-    { field: "looseQuantity", headerName: "Loose quantity", flex: 1 },
-    { field: "loosePiece", headerName: "Loose piece", flex: 1 },
+    { field: "company", headerName: "Company / Description", flex: 1 },
+    { field: "place", headerName: "Place", flex: 1 },
+    { field: "article", headerName: "Article", flex: 1 },
+    { field: "articleNum", headerName: "No of article", flex: 1 },
+    { field: "weight", headerName: "Weight", flex: 1 },
+    { field: "payment", headerName: "payment", flex: 1 },
+    { field: "remark", headerName: "Remark", flex: 1 },
     {
       field: "actions",
       headerName: "",
@@ -79,19 +109,7 @@ const TransactionDetails = ({ lorryReceipt, setLorryReceipt }) => {
         };
         if (!isEditMode) {
           const updatedTransactionDetail = {
-            ...transactionDetail,
-            boxQuantity: transactionDetail.boxQuantity
-              ? transactionDetail.boxQuantity
-              : 0,
-            popQuantity: transactionDetail.popQuantity
-              ? transactionDetail.popQuantity
-              : 0,
-            looseQuantity: transactionDetail.looseQuantity
-              ? transactionDetail.looseQuantity
-              : 0,
-            loosePiece: transactionDetail.loosePiece
-              ? transactionDetail.loosePiece
-              : 0,
+            ...transactionDetail,            
             id: Math.random(),
           };
           updatedState.transactions = [
@@ -183,9 +201,51 @@ const TransactionDetails = ({ lorryReceipt, setLorryReceipt }) => {
   const validateForm = (formData) => {
     const errors = { ...initialErrorState };
     if (formData.invoiceNo.trim() === "") {
-      errors.articleNo = {
+      errors.invoiceNo = {
         invalid: true,
         message: "Invoice number is required",
+      };
+    }
+
+    if (formData.company.trim() === "") {
+      errors.company = {
+        invalid: true,
+        message: "Company Name is required",
+      };
+    }
+
+    if (formData.place.trim() === "") {
+      errors.place = {
+        invalid: true,
+        message: "Place is required",
+      };
+    }
+
+    if (formData.article.trim() === "") {
+      errors.article = {
+        invalid: true,
+        message: "Article is required",
+      };
+    }
+
+    // if (formData.articleNum.trim() === "") {
+    //   errors.articleNum = {
+    //     invalid: true,
+    //     message: "Number is required",
+    //   };
+    // }
+
+    if (formData.weight <= 0) {
+      errors.weight = {
+        invalid: true,
+        message: "Weight is required",
+      };
+    }
+
+    if (formData.payment <= 0) {
+      errors.payment = {
+        invalid: true,
+        message: "payment is required",
       };
     }
 
@@ -229,59 +289,124 @@ const TransactionDetails = ({ lorryReceipt, setLorryReceipt }) => {
             </FormControl>
           </div>
           <div className="grid-item">
-            <FormControl fullWidth>
+            <FormControl fullWidth error={formErrors.company.invalid}>
               <TextField
-                type="number"
                 size="small"
                 variant="outlined"
-                label="Box quantity"
-                value={transactionDetail.boxQuantity}
+                label="Company / Description"
+                value={transactionDetail.company}
+                error={formErrors.company.invalid}
                 onChange={inputChangeHandler}
-                name="boxQuantity"
-                id="boxQuantity"
+                name="company"
+                id="company"
               />
+              {formErrors.company.invalid && (
+                <FormHelperText>{formErrors.company.message}</FormHelperText>
+              )}
             </FormControl>
           </div>
           <div className="grid-item">
-            <FormControl fullWidth>
+            <FormControl fullWidth error={formErrors.place.invalid}>
               <TextField
-                type="number"
                 size="small"
                 variant="outlined"
-                label="Pop quantity"
-                value={transactionDetail.popQuantity}
+                label="Place"
+                value={transactionDetail.place}
+                error={formErrors.place.invalid}
                 onChange={inputChangeHandler}
-                name="popQuantity"
-                id="popQuantity"
+                name="place"
+                id="place"
               />
+              {formErrors.place.invalid && (
+                <FormHelperText>{formErrors.place.message}</FormHelperText>
+              )}
             </FormControl>
           </div>
           <div className="grid-item">
-            <FormControl fullWidth>
+            <FormControl fullWidth error={formErrors.article.invalid}>
               <TextField
-                type="number"
                 size="small"
                 variant="outlined"
-                label="Loose outer quantity"
-                value={transactionDetail.looseQuantity}
+                label="Article"
+                value={transactionDetail.article}
+                error={formErrors.article.invalid}
                 onChange={inputChangeHandler}
-                name="looseQuantity"
-                id="looseQuantity"
+                name="article"
+                id="article"
               />
+              {formErrors.article.invalid && (
+                <FormHelperText>{formErrors.article.message}</FormHelperText>
+              )}
             </FormControl>
           </div>
           <div className="grid-item">
-            <FormControl fullWidth>
+            <FormControl fullWidth error={formErrors.articleNum.invalid}>
               <TextField
                 type="number"
                 size="small"
                 variant="outlined"
-                label="Loose piece quantity"
-                value={transactionDetail.loosePiece}
+                label="Article No"
+                value={transactionDetail.articleNum}
+                error={formErrors.articleNum.invalid}
                 onChange={inputChangeHandler}
-                name="loosePiece"
-                id="loosePiece"
+                name="articleNum"
+                id="articleNum"
               />
+              {formErrors.articleNum.invalid && (
+                <FormHelperText>{formErrors.articleNum.message}</FormHelperText>
+              )}
+            </FormControl>
+
+          </div>
+          <div className="grid-item">
+          <FormControl fullWidth error={formErrors.weight.invalid}>
+              <TextField
+                type="number"
+                size="small"
+                variant="outlined"
+                label="Weight"
+                value={transactionDetail.weight}
+                error={formErrors.weight.invalid}
+                onChange={inputChangeHandler}
+                name="weight"
+                id="weight"
+              />
+              {formErrors.weight.invalid && (
+                <FormHelperText>{formErrors.weight.message}</FormHelperText>
+              )}
+            </FormControl>
+          </div>
+         
+          <div className="grid-item">
+            <FormControl fullWidth error={formErrors.payment.invalid}>
+              <TextField
+                type="number"
+                size="small"
+                variant="outlined"
+                label="Payment"
+                value={transactionDetail.payment}
+                error={formErrors.payment.invalid}
+                onChange={inputChangeHandler}
+                name="payment"
+                id="payment"
+              />
+              {formErrors.payment.invalid && (
+                <FormHelperText>{formErrors.payment.message}</FormHelperText>
+              )}
+            </FormControl>
+          </div> 
+          <div className="grid-item">
+            <FormControl fullWidth>
+              <TextField
+                size="small"
+                variant="outlined"
+                label="Remark"
+                value={transactionDetail.remark}                
+                onChange={inputChangeHandler}
+                name="remark"
+                id="remark"
+              />
+              
             </FormControl>
           </div>
         </div>
@@ -308,12 +433,15 @@ const TransactionDetails = ({ lorryReceipt, setLorryReceipt }) => {
         </div>
       </form>
       <DataGrid
-        sx={{ backgroundColor: "primary.contrastText" }}
+        sx={{ backgroundColor: "primary.contrastText"}}
         autoHeight
         density="compact"
         getRowId={(row) => row.id || row._id}
         rows={lorryReceipt.transactions}
         columns={columns}
+        slots={{
+            footer: <p>Hello</p>,
+          }}
         initialState={{
           ...columns,
           columns: {
@@ -325,7 +453,8 @@ const TransactionDetails = ({ lorryReceipt, setLorryReceipt }) => {
         pageSize={10}
         rowsPerPageOptions={[10]}
         disableSelectionOnClick
-      />
+      /> 
+      <p style={{marginTop: '15px'}}>Total No of Article : {  lorryReceipt.transactions.reduce((total, num) => total + Math.round(Number(num.articleNum)) , 0)} Total Weight : {  lorryReceipt.transactions.reduce((total, num) => total + Math.round(Number(num.weight)) , 0)}</p>          
     </div>
   );
 };

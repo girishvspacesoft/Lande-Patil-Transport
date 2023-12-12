@@ -23,16 +23,12 @@ import { getDataForLR } from "../../../lib/api-master";
 import {
   updateLorryReceipt,
   getLorryReceipt,
+  viewLorryReceipt,
 } from "../../../lib/api-transactions";
 import LoadingSpinner from "../../UI/LoadingSpinner";
 import TransactionDetails from "./Transaction-Details/TransactionDetails";
-import { isValidDate } from "../../../lib/helper";
-
-const PAY_TYPES = [
-  { label: "TBB", value: "TBB" },
-  { label: "ToPay", value: "ToPay" },
-  { label: "Paid", value: "Paid" },
-];
+import { getFormattedLRNumber, isValidDate } from "../../../lib/helper";
+import { BILLS_PATH } from "../../../lib/api-base-paths";
 
 const initialState = {
   isBlank: false,
@@ -53,7 +49,6 @@ const initialState = {
   consigneeTo: "",
   transactions: [],
   serviceType: "LTT",
-  payType: PAY_TYPES[0],
   remark: "",
   mobile: ""
 };
@@ -125,6 +120,8 @@ const LorryReceiptEdit = () => {
   const [hasErrors, setHasErrors] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [vehicleTypes, setVehicleTypes] = useState([]);
+  const [isPrint, setPrint] = useState(false);
+  const [isDownload, setDownload] = useState(false);
 
   const navigate = useNavigate();
   const location = useLocation();
@@ -209,11 +206,7 @@ const LorryReceiptEdit = () => {
             if (consigneeIndex > -1) {
               consignee = customers[consigneeIndex];
             }
-            const payTypeIndex = PAY_TYPES.map((type) => type.label).indexOf(
-              response.payType
-            );
-            const payType = PAY_TYPES[payTypeIndex];
-
+           
             updatedResponse.consignor = consignor;
             updatedResponse.consignorGst = consignor?.gstNo || "";
             updatedResponse.consignorAddress = consignor?.address || "";
@@ -222,7 +215,7 @@ const LorryReceiptEdit = () => {
             updatedResponse.consigneeGst = consignee?.gstNo || "";
             updatedResponse.consigneeAddress = consignee?.address || "";
             updatedResponse.consigneeTo = consignee?.city || "";
-            updatedResponse.payType = payType;
+            
             updatedResponse.date = new Date(updatedResponse.date);
             setLorryReceipt(updatedResponse);
           }
@@ -243,14 +236,38 @@ const LorryReceiptEdit = () => {
     navigate("/transactions/returnLorryReceiptList");
   }, [navigate]);
 
+  const downloadFile = useCallback(
+    (blob, fileName, selectedLR) => {
+      
+      const baseURL =
+        BILLS_PATH + getFormattedLRNumber(selectedLR.lrNo) + ".pdf";
+      fetch(baseURL)
+        .then((res) => res.blob())
+        .then((file) => {
+          let tempUrl = URL.createObjectURL(file);
+          const aTag = document.createElement("a");
+          aTag.href = tempUrl;
+          aTag.download = baseURL.replace(/^.*[\\/]/, "");
+          document.body.appendChild(aTag);
+          aTag.click();
+          URL.revokeObjectURL(tempUrl);
+          aTag.remove();
+        })
+        .catch((err) => {
+          console.log(err);
+        });
+    },
+    []
+  );
   useEffect(() => {
     const controller = new AbortController();
     if (hasErrors) {
+      setPrint(false);
+      
       return setIsSubmitted(false);
     }
     if (isSubmitted && !hasErrors) {
-      const updatedLR = JSON.parse(JSON.stringify(lorryReceipt));
-      updatedLR.payType = updatedLR.payType.value;
+      const updatedLR = JSON.parse(JSON.stringify(lorryReceipt));      
       updatedLR.consignor = updatedLR.consignor.value
         ? updatedLR.consignor.value
         : updatedLR.consignor;
@@ -266,10 +283,38 @@ const LorryReceiptEdit = () => {
             setHttpError(response.message);
           } else {
             setHttpError("");
-            setFormErrors(initialErrorState);
-            setLorryReceipt(initialState);
-            setIsLoading(false);
-            goToLorryReceipts();
+            if(isPrint)  {
+              const controllerView = new AbortController();
+              
+              viewLorryReceipt(response._id, controllerView)
+              .then((responseView) => {
+                if (responseView.message) {
+                  setHttpError(responseView.message);
+                } else {
+                    const selectedLR = response;                  
+                    const path =
+                      BILLS_PATH + getFormattedLRNumber(selectedLR.lrNo) + ".pdf";
+                    window.open(path, "_blank");
+                  
+                }
+                setIsLoading(false);
+                setPrint(false);
+                goToLorryReceipts();
+                controllerView.abort();
+              })
+              .catch((error) => {
+                setHttpError(error.message);
+                setIsLoading(false);
+                setPrint(false);
+                controllerView.abort();
+              });
+              
+            } else {
+              setFormErrors(initialErrorState);
+              setLorryReceipt(initialState);
+              setIsLoading(false);
+              goToLorryReceipts();
+            }
           }
           setIsSubmitted(false);
         })
@@ -282,7 +327,7 @@ const LorryReceiptEdit = () => {
     return () => {
       controller.abort();
     };
-  }, [isSubmitted, hasErrors, lorryReceipt, goToLorryReceipts]);
+  }, [isSubmitted, downloadFile, isPrint, hasErrors, lorryReceipt, goToLorryReceipts]);
 
   const backButtonHandler = () => {
     goToLorryReceipts();
@@ -456,7 +501,12 @@ const LorryReceiptEdit = () => {
       };
     });
   };
-
+  const submitAndPrintHandler = (e) => {
+    e.preventDefault();
+    setFormErrors((currState) => validateForm(lorryReceipt));
+    setIsSubmitted(true);
+    setPrint(true);
+  }
   return (
     <>
       {isLoading && <LoadingSpinner />}
@@ -900,6 +950,16 @@ const LorryReceiptEdit = () => {
             className="ml6"
           >
             Update
+          </Button>
+          <Button
+            variant="contained"
+            size="medium"
+            type="button"
+            color="primary"            
+            className="ml6"
+            onClick={submitAndPrintHandler}
+          >
+            Update & Print
           </Button>
         </div>
       </Paper>

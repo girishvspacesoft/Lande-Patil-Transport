@@ -10,8 +10,8 @@ const initialState = {
   article: "",
   company: "",
   place: "",
-  articleNum: "",
-  weight: "",
+  articleNum: 0,
+  weight: 0,
   remark: "",
 };
 
@@ -222,14 +222,14 @@ const TransactionDetails = ({ lorryReceipt, setLorryReceipt }) => {
       };
     }
 
-    if (formData.articleNum.trim() === "") {
-      errors.articleNum = {
-        invalid: true,
-        message: "Number is required",
-      };
-    }
+    // if (formData.articleNum.trim() === "") {
+    //   errors.articleNum = {
+    //     invalid: true,
+    //     message: "Number is required",
+    //   };
+    // }
 
-    if (formData.weight.trim() === "") {
+    if (formData.weight >= 0) {
       errors.weight = {
         invalid: true,
         message: "Weight is required",

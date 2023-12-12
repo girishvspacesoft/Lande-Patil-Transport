@@ -25,6 +25,10 @@ const LorryReceipt = new Schema(
     wayBillNo: {
       type: String,
     },
+    toBill: {
+      type: String,
+      default: 'Consignee'
+    },
     driverName: {
       type: String
     },
@@ -77,9 +81,9 @@ const LorryReceipt = new Schema(
     deliveryAt: {
       type: String,
     },
-    payType: {
-      type: String,
-    },
+    // payType: {
+    //   type: String,
+    // },
     remark: {
       type: String,
     },
@@ -87,6 +91,71 @@ const LorryReceipt = new Schema(
       type: Number,
       default: 0,
       /*0 = new, 1 = loading slip generated, 2 = unloaded, 3 = delivered, 4 = closed*/
+    },
+    payment: {
+      type: Number,
+      default: 0,
+      required: this.type === 'deliver'
+    },
+    waiting: {
+      isWaiting: {
+        type: Boolean,
+        default: false
+      },
+      start: {
+        type: String,
+        default: "",
+        required: this.type === 'deliver' && this.isWaiting
+      },
+      end: {
+        type: String,
+        default: "",
+        required: this.type === 'deliver' && this.isWaiting
+      }
+    },
+    chargesDetails: {
+      hamali: {
+        type: Number,
+        default: 0,
+        required: function () {
+          return this.type !== 'return';
+        },
+      },
+      octroi: {
+        type: Number,
+        default: 0,
+        required: function () {
+          return this.type !== 'return';
+        },
+      },
+      weight: {
+        type: Number,
+        default: 0,
+        required: function () {
+          return this.type !== 'return';
+        },
+      },
+      toll: {
+        type: Number,
+        default: 0,
+        required: function () {
+          return this.type !== 'return';
+        },
+      },
+      escort: {
+        type: Number,
+        default: 0,
+        required: function () {
+          return this.type !== 'return';
+        },
+      },
+      other: {
+        type: Number,
+        default: 0,
+        required: function () {
+          return this.type !== 'return';
+        },
+      },
     },
     transactions: [
       {
@@ -116,6 +185,10 @@ const LorryReceipt = new Schema(
         weight: {
           type: Number,
           required: true,
+          default: 0,
+        },
+        payment: {
+          type: Number,         
           default: 0,
         },
       },

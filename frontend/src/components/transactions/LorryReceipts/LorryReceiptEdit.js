@@ -23,36 +23,52 @@ import { getDataForLR } from "../../../lib/api-master";
 import {
   updateLorryReceipt,
   getLorryReceipt,
+  viewLorryReceipt,
+  downloadLorryReceipt,
 } from "../../../lib/api-transactions";
 import LoadingSpinner from "../../UI/LoadingSpinner";
 import TransactionDetails from "./Transaction-Details/TransactionDetails";
-import { isValidDate } from "../../../lib/helper";
-
-const PAY_TYPES = [
-  { label: "TBB", value: "TBB" },
-  { label: "ToPay", value: "ToPay" },
-  { label: "Paid", value: "Paid" },
-];
+import { getFormattedLRNumber, isValidDate } from "../../../lib/helper";
+import ChargesDetails from "./Transaction-Details/ChargesDetails";
+import { TimePicker } from "@mui/x-date-pickers";
+import dayjs from 'dayjs';
+import { BILLS_PATH } from "../../../lib/api-base-paths";
 
 const initialState = {
   isBlank: false,
+  type: "deliver",
+  driverName: "",
   branch: "",
   wayBillNo: "",
   date: new Date(),
   vehicleNo: "",
   vehicleType: "",
-  consignor: null,
+  consignor: "",
   consignorGst: "",
   consignorAddress: "",
   consignorFrom: "",
-  consignee: null,
+  consignee: "",
   consigneeGst: "",
   consigneeAddress: "",
   consigneeTo: "",
   transactions: [],
-  serviceType: "LTT",
-  payType: PAY_TYPES[0],
+  serviceType: "LTT",  
   remark: "",
+  mobile: "",
+  waiting: {
+    isWaiting: false,
+    start: dayjs(),
+    end: dayjs(),
+  },
+  chargesDetails: {
+    hamali: 0,
+    octroi: 0,
+    weight: 0,
+    toll: 0,
+    escort: 0,
+    other: 0,
+  },
+  toBill: "Consignee",
 };
 
 const initialErrorState = {
@@ -60,11 +76,49 @@ const initialErrorState = {
     invalid: false,
     message: "",
   },
+  chargesDetails: {
+    hamali: {
+      invalid: false,
+      message: "",
+    },
+    octroi: {
+      invalid: false,
+      message: "",
+    },
+    weight: {
+      invalid: false,
+      message: "",
+    },
+    toll: {
+      invalid: false,
+      message: "",
+    },
+    escort: {
+      invalid: false,
+      message: "",
+    },
+    other: {
+      invalid: false,
+      message: "",
+    },
+  },
   date: {
     invalid: false,
     message: "",
   },
+  toBill: {
+    invalid: false,
+    message: "",
+  },
   vehicleNo: {
+    invalid: false,
+    message: "",
+  },
+  mobile: {
+    invalid: false,
+    message: "",
+  },
+  driverName: {
     invalid: false,
     message: "",
   },
@@ -88,6 +142,14 @@ const initialErrorState = {
     invalid: false,
     message: "",
   },
+  materialCost: {
+    invalid: false,
+    message: "",
+  },
+  deliveryInDays: {
+    invalid: false,
+    message: "",
+  },
   transactionDetails: {
     invalid: false,
     message: "",
@@ -106,6 +168,8 @@ const LorryReceiptEdit = () => {
   const [hasErrors, setHasErrors] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [vehicleTypes, setVehicleTypes] = useState([]);
+  const [isPrint, setPrint] = useState(false);
+  const [isDownload, setDownload] = useState(false);
 
   const navigate = useNavigate();
   const location = useLocation();
@@ -190,11 +254,7 @@ const LorryReceiptEdit = () => {
             if (consigneeIndex > -1) {
               consignee = customers[consigneeIndex];
             }
-            const payTypeIndex = PAY_TYPES.map((type) => type.label).indexOf(
-              response.payType
-            );
-            const payType = PAY_TYPES[payTypeIndex];
-
+            
             updatedResponse.consignor = consignor;
             updatedResponse.consignorGst = consignor?.gstNo || "";
             updatedResponse.consignorAddress = consignor?.address || "";
@@ -202,9 +262,9 @@ const LorryReceiptEdit = () => {
             updatedResponse.consignee = consignee;
             updatedResponse.consigneeGst = consignee?.gstNo || "";
             updatedResponse.consigneeAddress = consignee?.address || "";
-            updatedResponse.consigneeTo = consignee?.city || "";
-            updatedResponse.payType = payType;
+            updatedResponse.consigneeTo = consignee?.city || "";            
             updatedResponse.date = new Date(updatedResponse.date);
+            
             setLorryReceipt(updatedResponse);
           }
           setIsLoading(false);
@@ -223,15 +283,38 @@ const LorryReceiptEdit = () => {
   const goToLorryReceipts = useCallback(() => {
     navigate("/transactions/lorryReceipts");
   }, [navigate]);
-
+  const downloadFile = useCallback(
+    (blob, fileName, selectedLR) => {
+      
+      const baseURL =
+        BILLS_PATH + getFormattedLRNumber(selectedLR.lrNo) + ".pdf";
+      fetch(baseURL)
+        .then((res) => res.blob())
+        .then((file) => {
+          let tempUrl = URL.createObjectURL(file);
+          const aTag = document.createElement("a");
+          aTag.href = tempUrl;
+          aTag.download = baseURL.replace(/^.*[\\/]/, "");
+          document.body.appendChild(aTag);
+          aTag.click();
+          URL.revokeObjectURL(tempUrl);
+          aTag.remove();
+        })
+        .catch((err) => {
+          console.log(err);
+        });
+    },
+    []
+  );
   useEffect(() => {
     const controller = new AbortController();
     if (hasErrors) {
+      setPrint(false);
+      setDownload(false);
       return setIsSubmitted(false);
     }
     if (isSubmitted && !hasErrors) {
-      const updatedLR = JSON.parse(JSON.stringify(lorryReceipt));
-      updatedLR.payType = updatedLR.payType.value;
+      const updatedLR = JSON.parse(JSON.stringify(lorryReceipt));      
       updatedLR.consignor = updatedLR.consignor.value
         ? updatedLR.consignor.value
         : updatedLR.consignor;
@@ -247,10 +330,62 @@ const LorryReceiptEdit = () => {
             setHttpError(response.message);
           } else {
             setHttpError("");
-            setFormErrors(initialErrorState);
-            setLorryReceipt(initialState);
-            setIsLoading(false);
-            goToLorryReceipts();
+            if(isPrint)  {
+              const controllerView = new AbortController();
+              
+              viewLorryReceipt(response._id, controllerView)
+              .then((responseView) => {
+                if (responseView.message) {
+                  setHttpError(responseView.message);
+                } else {
+                    const selectedLR = response;                  
+                    const path =
+                      BILLS_PATH + getFormattedLRNumber(selectedLR.lrNo) + ".pdf";
+                    window.open(path, "_blank");
+                  
+                }
+                setIsLoading(false);
+                setPrint(false);
+                goToLorryReceipts();
+                controllerView.abort();
+              })
+              .catch((error) => {
+                setHttpError(error.message);
+                setIsLoading(false);
+                setPrint(false);
+                controllerView.abort();
+              });
+              
+            } else if (isDownload) {
+              const controllerDownload = new AbortController();
+              downloadLorryReceipt(response._id, controllerDownload)
+              .then((responseDownload) => {
+                if (responseDownload.message) {
+                  setHttpError(responseDownload.message);
+                } else {
+                  const selectedLR = response;                  
+                  const name = getFormattedLRNumber(selectedLR.lrNo) + ".pdf";
+                  downloadFile(responseDownload, name, selectedLR);
+                  
+                }
+                
+                setIsLoading(false);
+                setDownload(false);
+                goToLorryReceipts();
+                controllerDownload.abort();
+              })
+              .catch((error) => {
+                setHttpError(error.message);
+                setIsLoading(false);
+                setDownload(false);
+                controllerDownload.abort();
+              });
+            } else {
+              setFormErrors(initialErrorState);
+              setLorryReceipt(initialState);
+              setIsLoading(false);
+              goToLorryReceipts();
+            }
           }
           setIsSubmitted(false);
         })
@@ -263,7 +398,7 @@ const LorryReceiptEdit = () => {
     return () => {
       controller.abort();
     };
-  }, [isSubmitted, hasErrors, lorryReceipt, goToLorryReceipts]);
+  }, [isSubmitted, downloadFile, isPrint, isDownload, hasErrors, lorryReceipt, goToLorryReceipts]);
 
   const backButtonHandler = () => {
     goToLorryReceipts();
@@ -290,7 +425,9 @@ const LorryReceiptEdit = () => {
   };
 
   const validateForm = (formData) => {
+    
     const errors = { ...initialErrorState };
+    
     if (formData.branch.trim() === "") {
       errors.branch = { invalid: true, message: "Branch is required" };
     }
@@ -308,6 +445,13 @@ const LorryReceiptEdit = () => {
         errors.vehicleType = {
           invalid: true,
           message: "Vehicle type is required",
+        };
+      }
+      
+      if (formData.driverName.trim() === "") {
+        errors.driverName = {
+          invalid: true,
+          message: "Driver Name is required",
         };
       }
       if (!formData.consignor) {
@@ -328,6 +472,8 @@ const LorryReceiptEdit = () => {
           message: "At lease one transaction is required",
         };
       }
+
+      
     }
 
     let validationErrors = false;
@@ -438,10 +584,24 @@ const LorryReceiptEdit = () => {
     });
   };
 
+  const submitAndPrintHandler = (e) => {
+    e.preventDefault();
+    setFormErrors((currState) => validateForm(lorryReceipt));
+    setIsSubmitted(true);
+    setPrint(true);
+  }
+
+  const submitAndDownloadHandler = (e) => {
+    e.preventDefault();
+    setFormErrors((currState) => validateForm(lorryReceipt));
+    setIsSubmitted(true);
+    setDownload(true);
+  }
+
   return (
     <>
       {isLoading && <LoadingSpinner />}
-      <h1 className="pageHead">Update a lorry receipt</h1>
+      <h1 className="pageHead">Update Lorry Receipt Details</h1>
       {httpError !== "" && (
         <Stack
           sx={{
@@ -502,7 +662,6 @@ const LorryReceiptEdit = () => {
                   name="wayBillNo"
                   id="wayBillNo"
                   inputProps={{ readOnly: true }}
-                  readOnly={true}
                 />
               </FormControl>
             </div>
@@ -513,16 +672,16 @@ const LorryReceiptEdit = () => {
                     label="Date"
                     inputFormat="DD/MM/YYYY"
                     value={lorryReceipt.date}
-                    disableFuture={true}
                     onChange={dateInputChangeHandler.bind(null, "date")}
                     inputProps={
                       {
                         // readOnly: true,
-                        // onFocus: () => {
-                        //   setDateIsOpen(true);
-                        // }
+                        // onFocus: () => setDateFocus(currState => true),
+                        // onBlur: () => setDateFocus(currState => false),
+                        // onClick: (e) => setDateFocus(currState => !currState)
                       }
                     }
+                    closeOnSelect
                     renderInput={(params) => (
                       <TextField name="date" size="small" {...params} />
                     )}
@@ -533,6 +692,7 @@ const LorryReceiptEdit = () => {
                 )}
               </FormControl>
             </div>
+
             <div className="grid-item">
               <FormControl
                 fullWidth
@@ -603,11 +763,44 @@ const LorryReceiptEdit = () => {
                 )}
               </FormControl>
             </div>
-            {user.type.toLowerCase() !== "admin" &&
-            user.type.toLowerCase() !== "superadmin" ? (
-              <div className="grid-item"></div>
-            ) : null}
-            <div className="grid-item"></div>
+            
+            <div className="grid-item">
+              <FormControl fullWidth size="small" error={formErrors.driverName.invalid}>
+                <TextField
+                  size="small"
+                  variant="outlined"
+                  label="Driver Name"
+                  error={formErrors.driverName.invalid}
+                  value={lorryReceipt.driverName}
+                  onChange={inputChangeHandler}
+                  name="driverName"
+                  id="driverName"
+                />
+                {formErrors.driverName.invalid && (
+                  <FormHelperText>
+                    {formErrors.driverName.message}
+                  </FormHelperText>
+                )}
+              </FormControl>
+            </div>
+            <div className="grid-item">
+              <FormControl fullWidth error={formErrors.mobile.invalid}>
+                <TextField
+                  size="small"
+                  variant="outlined"
+                  label="Mobile"
+                  value={lorryReceipt.mobile}
+                  onChange={inputChangeHandler}
+                  name="mobile"
+                  id="mobile"
+                />
+                {formErrors.mobile.invalid && (
+                  <FormHelperText>
+                    {formErrors.mobile.message}
+                  </FormHelperText>
+                )}
+              </FormControl>
+            </div>
             <div className="grid-item">
               <FormControl
                 fullWidth
@@ -641,19 +834,7 @@ const LorryReceiptEdit = () => {
                 )}
               </FormControl>
             </div>
-            <div className="grid-item">
-              <FormControl fullWidth>
-                <TextField
-                  size="small"
-                  variant="outlined"
-                  label="Consignor GST no."
-                  value={lorryReceipt.consignorGst}
-                  onChange={inputChangeHandler}
-                  name="consignorGst"
-                  id="consignorGst"
-                />
-              </FormControl>
-            </div>
+            
             <div className="grid-item">
               <FormControl fullWidth>
                 <TextField
@@ -664,7 +845,6 @@ const LorryReceiptEdit = () => {
                   onChange={inputChangeHandler}
                   name="consignorAddress"
                   id="consignorAddress"
-                  inputProps={{ readOnly: true }}
                 />
               </FormControl>
             </div>
@@ -679,7 +859,6 @@ const LorryReceiptEdit = () => {
                   onChange={inputChangeHandler}
                   name="consignorFrom"
                   id="consignorFrom"
-                  inputProps={{ readOnly: true }}
                 />
                 {formErrors.consignorFrom.invalid && (
                   <FormHelperText>
@@ -688,8 +867,7 @@ const LorryReceiptEdit = () => {
                 )}
               </FormControl>
             </div>
-            <div className="grid-item"></div>
-            <div className="grid-item"></div>
+            
             <div className="grid-item">
               <FormControl
                 fullWidth
@@ -723,19 +901,7 @@ const LorryReceiptEdit = () => {
                 )}
               </FormControl>
             </div>
-            <div className="grid-item">
-              <FormControl fullWidth>
-                <TextField
-                  size="small"
-                  variant="outlined"
-                  label="Consignee GST no."
-                  value={lorryReceipt.consigneeGst}
-                  onChange={inputChangeHandler}
-                  name="consigneeGst"
-                  id="consigneeGst"
-                />
-              </FormControl>
-            </div>
+     
             <div className="grid-item">
               <FormControl fullWidth>
                 <TextField
@@ -746,7 +912,6 @@ const LorryReceiptEdit = () => {
                   onChange={inputChangeHandler}
                   name="consigneeAddress"
                   id="consigneeAddress"
-                  inputProps={{ readOnly: true }}
                 />
               </FormControl>
             </div>
@@ -761,7 +926,6 @@ const LorryReceiptEdit = () => {
                   onChange={inputChangeHandler}
                   name="consigneeTo"
                   id="consigneeTo"
-                  inputProps={{ readOnly: true }}
                 />
                 {formErrors.consigneeTo.invalid && (
                   <FormHelperText>
@@ -769,48 +933,35 @@ const LorryReceiptEdit = () => {
                   </FormHelperText>
                 )}
               </FormControl>
-            </div>
-            <div className="grid-item"></div>
-            <div className="grid-item"></div>
+            </div>           
+            
             <div className="grid-item">
-              <FormControl fullWidth size="small">
-                <Autocomplete
-                  disablePortal
-                  autoSelect
-                  autoHighlight={true}
-                  size="small"
-                  name="serviceType"
-                  options={["LTT"]}
-                  value={lorryReceipt.serviceType}
-                  onChange={(e, value) =>
-                    autocompleteChangeListener(e, value, "serviceType")
-                  }
-                  openOnFocus
-                  renderInput={(params) => (
-                    <TextField {...params} label="Service type" fullWidth />
-                  )}
-                />
+              <FormControl
+                fullWidth
+                size="small"                  
+              >
+                <InputLabel id="toBill">To Bill</InputLabel>
+                <Select
+                  labelId="toBill"
+                  name="toBill"
+                  label="To Bill"
+                  value={lorryReceipt.toBill}
+                  onChange={inputChangeHandler}
+                >
+                  {
+                    ["Consignee", "Consignor"].map((value) => (
+                      <MenuItem
+                        key={value}
+                        value={value}
+                        className="menuItem"
+                      >
+                        {value}
+                      </MenuItem>
+                    ))}
+                </Select>                  
               </FormControl>
             </div>
-            <div className="grid-item">
-              <FormControl fullWidth size="small">
-                <Autocomplete
-                  disablePortal
-                  autoSelect
-                  size="small"
-                  name="payType"
-                  options={PAY_TYPES}
-                  value={lorryReceipt.payType}
-                  onChange={(e, value) =>
-                    autocompleteChangeListener(e, value, "payType")
-                  }
-                  openOnFocus
-                  renderInput={(params) => (
-                    <TextField {...params} label="Pay type" fullWidth />
-                  )}
-                />
-              </FormControl>
-            </div>
+            
             <div className="grid-item">
               <FormControl fullWidth>
                 <TextField
@@ -824,6 +975,7 @@ const LorryReceiptEdit = () => {
                 />
               </FormControl>
             </div>
+                             
             <div className="grid-item">
               <FormControlLabel
                 control={
@@ -836,6 +988,71 @@ const LorryReceiptEdit = () => {
                 label="Cancel LR"
               />
             </div>
+
+           
+          </div>
+          <div>
+            <FormControlLabel
+              control={
+                <Checkbox
+                  name="waiting"      
+                  checked={lorryReceipt.waiting.isWaiting}
+                  onChange={(e) => setLorryReceipt(currentState => {
+                    
+                    return {
+                      ...currentState,
+                      waiting: {
+                        ...currentState.waiting,
+                        isWaiting: e.currentTarget.checked
+                      }
+                    }
+                  })}             
+                />
+              }
+              
+              label="Waiting"
+            />
+            <FormControl>
+              <LocalizationProvider dateAdapter={AdapterDayjs}>            
+                <TimePicker
+                  disabled={!lorryReceipt.waiting.isWaiting}
+                  value={lorryReceipt.waiting.start}
+                  size="small"
+                  label="From"                    
+                  onChange={(newValue) => setLorryReceipt(currentState => {
+                    return {
+                      ...currentState,
+                      waiting: {
+                        ...currentState.waiting,
+                        start: newValue
+                      }
+                    }
+                  })}
+                  renderInput={params => <TextField {...params} style={{width: '135px'}} size="small" variant="outlined" />}
+                />                
+              </LocalizationProvider>
+            </FormControl>
+            &nbsp;&nbsp;&nbsp;&nbsp;
+            <FormControl>
+              <LocalizationProvider dateAdapter={AdapterDayjs}>            
+                <TimePicker
+                disabled={!lorryReceipt.waiting.isWaiting}
+                  value={lorryReceipt.waiting.end}
+                  size="small"
+                  label="End"                    
+                  onChange={(newValue) => setLorryReceipt(currentState => {
+                    return {
+                      ...currentState,
+                      waiting: {
+                        ...currentState.waiting,
+                        end: newValue
+                      }
+                    }
+                  })}
+                  renderInput={params => <TextField {...params} style={{width: '135px'}} size="small" variant="outlined" />}
+                />                
+              </LocalizationProvider>
+            </FormControl>
           </div>
         </Paper>
       </form>
@@ -847,14 +1064,22 @@ const LorryReceiptEdit = () => {
         <TransactionDetails
           lorryReceipt={lorryReceipt}
           setLorryReceipt={setLorryReceipt}
+         
         />
       </Paper>
-
+      <h2 className="mb20">Charges details</h2>
+      <Paper sx={{ padding: "20px", marginBottom: "20px" }}>
+        <ChargesDetails
+          lorryReceipt={lorryReceipt}
+          setLorryReceipt={setLorryReceipt}
+          formErrors={formErrors}
+        />
+      </Paper>
       <Paper sx={{ padding: "20px", marginBottom: "20px" }}>
         <div className="right">
           <Button variant="outlined" size="medium" onClick={backButtonHandler}>
             Back
-          </Button>
+          </Button>          
           <Button
             variant="contained"
             size="medium"
@@ -863,8 +1088,28 @@ const LorryReceiptEdit = () => {
             form="lorryReceiptForm"
             className="ml6"
           >
-            Save
+            Update
           </Button>
+          <Button
+            variant="contained"
+            size="medium"
+            type="button"
+            color="primary"            
+            className="ml6"
+            onClick={submitAndPrintHandler}
+          >
+            Update & Print
+          </Button>
+          <Button
+            variant="contained"
+            size="medium"
+            type="button"
+            color="primary"            
+            className="ml6"
+            onClick={submitAndDownloadHandler}
+          >
+            Update & PDF Print
+            </Button>
         </div>
       </Paper>
     </>

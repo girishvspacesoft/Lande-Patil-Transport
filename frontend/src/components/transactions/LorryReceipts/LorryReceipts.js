@@ -26,8 +26,9 @@ import LoadingSpinner from "../../UI/LoadingSpinner";
 import CustomDialog from "../../UI/Dialog";
 import Dialog from "@mui/material/Dialog";
 
-import { getCustomers } from "../../../lib/api-master";
+import { getBranches, getCustomers } from "../../../lib/api-master";
 import {
+  downloadLorryReceipt,
   getAllLorryReceiptsWithCount,
   getLorryReceiptsWithCount,
   removeLorryReceipt,
@@ -46,28 +47,19 @@ const LorryReceipts = (props) => {
   const defaultLayoutPluginInstance = defaultLayoutPlugin();
   const columns = [
     { field: "_id", headerName: "Id" },
-    { field: "wayBillNo", headerName: "LR no.", width: 100 },
-    { field: "formattedDate", headerName: "Date", width: 100 },
+    { field: "sl", headerName: "SR no.", width: 100 },
+    { field: "consigno", headerName: "Consigno", width: 200 },
+    { field: "formattedDate", headerName: "ConsignDate", width: 100 },
     {
       field: "consignor",
       headerName: "Consignor",
-      flex: 1,
-      // renderCell: (params) => {
-      //   return params.row.consignor?.name
-      //     ? params.row.consignor?.name
-      //     : params.row.consignor;
-      // },
+      flex: 1,      
     },
     { field: "from", headerName: "From", width: 130 },
     {
       field: "consignee",
       headerName: "Consignee",
-      flex: 1,
-      // renderCell: (params) => {
-      //   return params.row.consignee?.name
-      //     ? params.row.consignee?.name
-      //     : params.row.consignee;
-      // },
+      flex: 1,      
     },
     { field: "to", headerName: "To", width: 130 },
     {
@@ -122,14 +114,15 @@ const LorryReceipts = (props) => {
                 <IconButton size="small" onClick={triggerView} color="primary">
                   <VisibilityIcon />
                 </IconButton>
-                <IconButton size="small" onClick={triggerEmail} color="primary">
+                {/* <IconButton size="small" onClick={triggerEmail} color="primary">
                   <EmailIcon />
-                </IconButton>
+                </IconButton> */}
               </>
             )}
+           
             <IconButton size="small" onClick={triggerEdit} color="primary">
               <EditIcon />
-            </IconButton>
+            </IconButton> 
             <IconButton size="small" onClick={triggerDelete} color="error">
               <DeleteIcon />
             </IconButton>
@@ -147,7 +140,7 @@ const LorryReceipts = (props) => {
   const [lorryReceiptsCount, setLorryReceiptsCount] = useState(0);
   const [isLastPage, setIsLastPage] = useState(0);
   const [page, setPage] = useState(1);
-  const [limit, setLimit] = useState(100);
+  const [limit, setLimit] = useState(10);
   const [updatedLorryReceipts, setUpdatedLorryReceipts] = useState([]);
   const [httpError, setHttpError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -162,11 +155,12 @@ const LorryReceipts = (props) => {
   useEffect(() => {
     const controller = new AbortController();
     if (page && limit && user) {
-      if (user.type) {
-        const type = undefined;
+      if (user.type && selectedBranch) {
+
+        const type = "deliver";
         if (user.type.toLowerCase() === "superadmin") {
           setIsLoading(true);
-          getAllLorryReceiptsWithCount(page, limit, filterData, type, controller)
+          getAllLorryReceiptsWithCount(page, limit, filterData, type, selectedBranch._id, controller)
             .then((response) => {
               if (response.message) {
                 setHttpError(response.message);
@@ -222,7 +216,7 @@ const LorryReceipts = (props) => {
             setHttpError(response.message);
           } else {
             setHttpError("");
-            const updatedLorryReceipts = lorryReceipts.map((lorryReceipt) => {
+            const updatedLorryReceipts = lorryReceipts.map((lorryReceipt, key) => {
               const consignor = response.filter(
                 (customer) => customer._id === lorryReceipt.consignor
               );
@@ -238,6 +232,7 @@ const LorryReceipts = (props) => {
                   ? consignee[0]
                   : lorryReceipt.consignee,
                 formattedDate: getFormattedDate(lorryReceipt.createdAt),
+                sl: key + 1
               };
             });
             setUpdatedLorryReceipts(updatedLorryReceipts);
@@ -315,7 +310,8 @@ const LorryReceipts = (props) => {
     const controller = new AbortController();
     if (viewLR && viewLR._id) {
       setIsLoading(true);
-      viewLorryReceipt(viewLR._id, controller)
+      if(viewLR.download){
+        downloadLorryReceipt(viewLR._id, controller)
         .then((response) => {
           if (response.message) {
             setHttpError(response.message);
@@ -338,6 +334,31 @@ const LorryReceipts = (props) => {
           setHttpError(error.message);
           setIsLoading(false);
         });
+      } else {
+        viewLorryReceipt(viewLR._id, controller)
+        .then((response) => {
+          if (response.message) {
+            setHttpError(response.message);
+          } else {
+            const selectedLR = lorryReceipts.find(
+              (lr) => lr._id === viewLR._id
+            );
+            if (viewLR.download) {
+              const name = getFormattedLRNumber(selectedLR.lrNo) + ".pdf";
+              downloadFile(response, name);
+            } else {
+              const path =
+                BILLS_PATH + getFormattedLRNumber(selectedLR.lrNo) + ".pdf";
+              window.open(path, "_blank");
+            }
+          }
+          setIsLoading(false);
+        })
+        .catch((error) => {
+          setHttpError(error.message);
+          setIsLoading(false);
+        });
+      }
     }
     return () => {
       controller.abort();
@@ -402,6 +423,30 @@ const LorryReceipts = (props) => {
     setFilterData(quickFilterValues[0] || "");    
   }, []);
 
+  useEffect(() => {
+    const controller = new AbortController();
+
+    setIsLoading(true);
+    getBranches(controller)
+      .then(response => {
+        if (response.messgage) {
+          setHttpError(response.message);
+        } else {
+          setbranches(response);
+          setSelectedBranch(response[0])
+        }
+        setIsLoading(false);
+      })
+      .catch(error => {
+        setHttpError(error.message);
+        setIsLoading(false);
+      });
+
+    return () => {
+      controller.abort();
+    };
+  }, []);
+
   return (
     <>
       {isLoading && <LoadingSpinner />}
@@ -445,9 +490,10 @@ const LorryReceipts = (props) => {
       )}
 
       <div className="page_head">
-        <h1 className="pageHead">Lorry receipts</h1>
+        <h1 className="pageHead">Direct Lorry Receipt List</h1>
         <div className="page_actions">
-          {selectedBranch && (
+          {selectedBranch && (user.type.toLowerCase() === "admin" ||
+            user.type.toLowerCase() === "superadmin") && (
             <FormControl
               size="small"
               sx={{ width: "150px", marginRight: "5px" }}
@@ -481,7 +527,7 @@ const LorryReceipts = (props) => {
             className="ml6"
             onClick={handleAddLR}
           >
-            Add a lorry receipt
+            Add lorry receipt
           </Button>
         </div>
       </div>
