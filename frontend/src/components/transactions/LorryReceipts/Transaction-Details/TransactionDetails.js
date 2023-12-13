@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { TextField, FormControl, FormHelperText, Button } from "@mui/material";
+import { TextField, FormControl, FormHelperText, Button, Autocomplete } from "@mui/material";
 import { DataGrid } from "@mui/x-data-grid";
 import { IconButton } from "@mui/material";
 import EditIcon from "@mui/icons-material/Edit";
@@ -47,7 +47,7 @@ const initialErrorState = {
   },
 };
 
-const TransactionDetails = ({ lorryReceipt, setLorryReceipt }) => {
+const TransactionDetails = ({ lorryReceipt, setLorryReceipt, customers }) => {
   const columns = [
     { field: "invoiceNo", headerName: "Invoice No", flex: 1 },
     { field: "company", headerName: "Company / Description", flex: 1 },
@@ -263,6 +263,36 @@ const TransactionDetails = ({ lorryReceipt, setLorryReceipt }) => {
     return errors;
   };
 
+  const companyChangeHandler = (e, value) => {
+    
+    if (value) {
+      if (typeof value === "object") {
+        setTransactionDetail((currState) => {
+          return {
+            ...currState,
+            company: value.label,
+            place: value.city
+          }
+        });
+      } else {
+        setTransactionDetail((currState) => {
+          return {
+            ...currState,
+            company: value,
+          };
+        });
+      }
+    } else {
+      setTransactionDetail((currState) => {
+        return {
+          ...currState,
+          company: '',
+        };
+      });
+    }
+    
+  };
+
   return (
     <div>
       <form
@@ -290,16 +320,25 @@ const TransactionDetails = ({ lorryReceipt, setLorryReceipt }) => {
           </div>
           <div className="grid-item">
             <FormControl fullWidth error={formErrors.company.invalid}>
-              <TextField
-                size="small"
-                variant="outlined"
-                label="Company / Description"
-                value={transactionDetail.company}
-                error={formErrors.company.invalid}
-                onChange={inputChangeHandler}
-                name="company"
-                id="company"
-              />
+                <Autocomplete
+                  freeSolo
+                  autoSelect
+                  size="small"
+                  name="company"
+                  options={customers}
+                  value={transactionDetail.company}
+                  getOptionLabel={(option) => option.label || option}
+                  onChange={(e, value) => companyChangeHandler(e, value)}
+                  openOnFocus
+                  renderInput={(params) => (
+                    <TextField
+                      {...params}
+                      label="Company"
+                      error={formErrors.company.invalid}
+                      fullWidth
+                    />
+                  )}
+                />
               {formErrors.company.invalid && (
                 <FormHelperText>{formErrors.company.message}</FormHelperText>
               )}

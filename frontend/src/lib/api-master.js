@@ -663,8 +663,14 @@ export const getDataForLR = (controller) => {
       },
       signal: controller?.signal,
     }),
+    fetch(`${API_BASE_PATH_MASTER}/getDrivers`, {
+      headers: {
+        "Content-Type": "application/json",
+      },
+      signal: controller?.signal,
+    })
   ]).then(
-    ([branches, vehicles, articles, customers, places, vehicleTypes, lastLR]) =>
+    ([branches, vehicles, articles, customers, places, vehicleTypes, lastLR, drivers]) =>
       Promise.all([
         branches.json(),
         vehicles.json(),
@@ -673,6 +679,7 @@ export const getDataForLR = (controller) => {
         places.json(),
         vehicleTypes.json(),
         lastLR.json(),
+        drivers.json(),
       ])
   );
 };

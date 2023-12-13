@@ -113,6 +113,7 @@ const LorryReceiptEdit = () => {
   const [vehicles, setVehicles] = useState([]);
   const [customers, setCustomers] = useState([]);
   const [places, setPlaces] = useState([]);
+  const [drivers, setDrivers] = useState([]);
   const [lorryReceipt, setLorryReceipt] = useState(initialState);
   const [formErrors, setFormErrors] = useState(initialErrorState);
   const [isSubmitted, setIsSubmitted] = useState(false);
@@ -121,7 +122,6 @@ const LorryReceiptEdit = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [vehicleTypes, setVehicleTypes] = useState([]);
   const [isPrint, setPrint] = useState(false);
-  const [isDownload, setDownload] = useState(false);
 
   const navigate = useNavigate();
   const location = useLocation();
@@ -134,7 +134,7 @@ const LorryReceiptEdit = () => {
     getDataForLR(controller)
       .then((response) => {
         setIsLoading(false);
-        if (response.length && response.length === 7) {
+        if (response.length && response.length === 8) {
           setBranches(response[0]);
           const updatedCustomers = response[3].map((customer) => {
             customer.label = customer.name;
@@ -160,6 +160,7 @@ const LorryReceiptEdit = () => {
           });
           setVehicleTypes(vehicleTypes);
           setPlaces(updatedPlaces);
+          setDrivers(response[7]);
         } else {
           setHttpError(
             "Something went wrong! Please try later or contact Administrator."
@@ -232,6 +233,27 @@ const LorryReceiptEdit = () => {
     };
   }, [lrId, customers, places, vehicles]);
 
+  const driverChangeHandler = (e, value) => {
+    if(value){
+      if (typeof value === "object") {
+        if (value.name) {
+          value = value.name;
+        } else {
+          value = "";
+        }
+      } else {
+        value = "";
+      }
+    } else {
+      value = "";
+    }
+    setLorryReceipt((currState) => {
+      return {
+        ...currState,
+        driverName: value,
+      };
+    });
+  };
   const goToLorryReceipts = useCallback(() => {
     navigate("/transactions/returnLorryReceiptList");
   }, [navigate]);
@@ -678,15 +700,27 @@ const LorryReceiptEdit = () => {
             ) : null} */}
             <div className="grid-item">
               <FormControl fullWidth size="small" error={formErrors.driverName.invalid}>
-                <TextField
+              <Autocomplete
+                  freeSolo
+                  autoSelect
                   size="small"
-                  variant="outlined"
-                  label="Driver Name"
-                  error={formErrors.driverName.invalid}
-                  value={lorryReceipt.driverName}
-                  onChange={inputChangeHandler}
                   name="driverName"
-                  id="driverName"
+                  options={drivers}
+                  value={lorryReceipt.driverName}
+                  getOptionLabel={(option) => option.name || option}
+                  // onChange={(e, value) => autocompleteChangeListener(e, value, 'vehicleType')}
+                  onChange={(e, value) =>
+                    driverChangeHandler(e, value)
+                  }
+                  openOnFocus
+                  renderInput={(params) => (
+                    <TextField
+                      {...params}
+                      label="Driver Name"
+                      error={formErrors.driverName.invalid}
+                      fullWidth
+                    />
+                  )}
                 />
                 {formErrors.driverName.invalid && (
                   <FormHelperText>
@@ -746,19 +780,7 @@ const LorryReceiptEdit = () => {
                 )}
               </FormControl>
             </div>
-            {/* <div className="grid-item">
-              <FormControl fullWidth>
-                <TextField
-                  size="small"
-                  variant="outlined"
-                  label="Consignor GST no."
-                  value={lorryReceipt.consignorGst}
-                  onChange={inputChangeHandler}
-                  name="consignorGst"
-                  id="consignorGst"
-                />
-              </FormControl>
-            </div> */}
+            
             <div className="grid-item">
               <FormControl fullWidth>
                 <TextField
@@ -791,9 +813,7 @@ const LorryReceiptEdit = () => {
                 )}
               </FormControl>
             </div>
-            {/* <div className="grid-item"></div>
-            <div className="grid-item"></div>
-            <div className="grid-item"></div> */}
+            
             <div className="grid-item">
               <FormControl
                 fullWidth
@@ -827,19 +847,7 @@ const LorryReceiptEdit = () => {
                 )}
               </FormControl>
             </div>
-            {/* <div className="grid-item">
-              <FormControl fullWidth>
-                <TextField
-                  size="small"
-                  variant="outlined"
-                  label="Consignee GST no."
-                  value={lorryReceipt.consigneeGst}
-                  onChange={inputChangeHandler}
-                  name="consigneeGst"
-                  id="consigneeGst"
-                />
-              </FormControl>
-            </div> */}
+            
             <div className="grid-item">
               <FormControl fullWidth>
                 <TextField
@@ -872,30 +880,7 @@ const LorryReceiptEdit = () => {
                 )}
               </FormControl>
             </div>
-            {/* <div className="grid-item"></div>
-            <div className="grid-item"></div>
-            <div className="grid-item"></div> */}
-            {/* <div className="grid-item">
-              <FormControl fullWidth size="small">
-                <Autocomplete
-                  disablePortal
-                  autoSelect
-                  autoHighlight={true}
-                  size="small"
-                  name="serviceType"
-                  options={["LTT"]}
-                  value={lorryReceipt.serviceType}
-                  onChange={(e, value) =>
-                    autocompleteChangeListener(e, value, "serviceType")
-                  }
-                  openOnFocus
-                  renderInput={(params) => (
-                    <TextField {...params} label="Service type" fullWidth />
-                  )}
-                />
-              </FormControl>
-            </div> */}
-           
+                       
             <div className="grid-item">
               <FormControl fullWidth>
                 <TextField
@@ -933,6 +918,7 @@ const LorryReceiptEdit = () => {
         <TransactionDetails
           lorryReceipt={lorryReceipt}
           setLorryReceipt={setLorryReceipt}
+          customers={customers}
         />
       </Paper>
 

@@ -161,6 +161,7 @@ const LorryReceiptEdit = () => {
   const [vehicles, setVehicles] = useState([]);
   const [customers, setCustomers] = useState([]);
   const [places, setPlaces] = useState([]);
+  const [drivers, setDrivers] = useState([]);
   const [lorryReceipt, setLorryReceipt] = useState(initialState);
   const [formErrors, setFormErrors] = useState(initialErrorState);
   const [isSubmitted, setIsSubmitted] = useState(false);
@@ -182,7 +183,7 @@ const LorryReceiptEdit = () => {
     getDataForLR(controller)
       .then((response) => {
         setIsLoading(false);
-        if (response.length && response.length === 7) {
+        if (response.length && response.length === 8) {
           setBranches(response[0]);
           const updatedCustomers = response[3].map((customer) => {
             customer.label = customer.name;
@@ -208,6 +209,7 @@ const LorryReceiptEdit = () => {
           });
           setVehicleTypes(vehicleTypes);
           setPlaces(updatedPlaces);
+          setDrivers(response[7]);
         } else {
           setHttpError(
             "Something went wrong! Please try later or contact Administrator."
@@ -559,15 +561,6 @@ const LorryReceiptEdit = () => {
     }
   };
 
-  const autocompleteChangeListener = (e, option, name) => {
-    setLorryReceipt((currState) => {
-      return {
-        ...currState,
-        [name]: option,
-      };
-    });
-  };
-
   const vehicleChangeHandler = (e, value, name) => {
     if (typeof value === "object") {
       if (value && value.label) {
@@ -597,6 +590,28 @@ const LorryReceiptEdit = () => {
     setIsSubmitted(true);
     setDownload(true);
   }
+
+  const driverChangeHandler = (e, value) => {
+    if(value){
+      if (typeof value === "object") {
+        if (value.name) {
+          value = value.name;
+        } else {
+          value = "";
+        }
+      } else {
+        value = "";
+      }
+    } else {
+      value = "";
+    }
+    setLorryReceipt((currState) => {
+      return {
+        ...currState,
+        driverName: value,
+      };
+    });
+  };
 
   return (
     <>
@@ -766,15 +781,27 @@ const LorryReceiptEdit = () => {
             
             <div className="grid-item">
               <FormControl fullWidth size="small" error={formErrors.driverName.invalid}>
-                <TextField
+              <Autocomplete
+                  freeSolo
+                  autoSelect
                   size="small"
-                  variant="outlined"
-                  label="Driver Name"
-                  error={formErrors.driverName.invalid}
-                  value={lorryReceipt.driverName}
-                  onChange={inputChangeHandler}
                   name="driverName"
-                  id="driverName"
+                  options={drivers}
+                  value={lorryReceipt.driverName}
+                  getOptionLabel={(option) => option.name || option}
+                  // onChange={(e, value) => autocompleteChangeListener(e, value, 'vehicleType')}
+                  onChange={(e, value) =>
+                    driverChangeHandler(e, value)
+                  }
+                  openOnFocus
+                  renderInput={(params) => (
+                    <TextField
+                      {...params}
+                      label="Driver Name"
+                      error={formErrors.driverName.invalid}
+                      fullWidth
+                    />
+                  )}
                 />
                 {formErrors.driverName.invalid && (
                   <FormHelperText>
@@ -1064,7 +1091,7 @@ const LorryReceiptEdit = () => {
         <TransactionDetails
           lorryReceipt={lorryReceipt}
           setLorryReceipt={setLorryReceipt}
-         
+          customers={customers}
         />
       </Paper>
       <h2 className="mb20">Charges details</h2>
